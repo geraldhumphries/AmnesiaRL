@@ -1,37 +1,40 @@
 Roadmap:
-	•	Stamina
-		o	Only a factor during real time play
-		o	Fast movement will reduce stamina, low stamina will either make moving take multiple keypresses or empty stamina will simply prevent movement
-		o	Stopping increases stamina after a short delay
-		o	Forces the player to use stealth tactics instead of rushing through the level
-	•	Doors
-		o	More difficult to bash open
-		o	Objects can be moved in front of the door to increase door health
-		o	Fix bug with door spawning when a hallway corners adjacent to a room
-	•	Health and sanity
-		o	Sanity should increase over time while in the light and with no monster around
-		o	Health and sanity recovery with progress or healing items
-		o	
-	•	Objectives and Floors
-		o	Objective ideas
-			-	Item that needs to be found
-			-	Puzzle that needs to be done (maybe involving that item?)
-	•	Light
-		o	Multiple sources
-		o	Ignitable torches (tinderboxes too?)
-		o	Multiple colours
-		o	Two player FOVs, a short one that will show nearby items (using local light and the lantern), one that will show distant light sources
-		o	Light intensity for each tile, lower the farther away from the source it is
-		o	Low light intensities are less visible the farther away you are
-	•	Stealth mechanics
-		o	Movement will cause noise
-		o	Light intensity, noise, and sanity all factors in visibility
-		o	Objects to hide in, will lower visibility but take extra actions to move out of and decrease visibility
-		o	A dialog that tells you when you are being chased and when the monster is searching for you
-	•	Monster
-		o	Monster paths directly to your location until you turn the lantern off, even if you go out of sight. Maybe path to and search the room you are in instead of pathing directly to your location? 
-	•	Game
-		o	Pausing
-		o	Saving and loading
-		o	Delete save file on death
-		o	Keep track of high scores
+    Stamina
+	    Only a factor during real time play
+	    Fast movement will reduce stamina, low stamina will either make moving take multiple keypresses or empty stamina will simply prevent movement
+	    Stopping increases stamina after a short delay
+	    Forces the player to use stealth tactics instead of rushing through the level
+    Doors
+	    More difficult to bash open
+	    Objects can be moved in front of the door to increase door health
+	    Fix bug with door spawning when a hallway corners adjacent to a room
+    Health and sanity
+	    Sanity should increase over time while in the light and with no monster around
+	    Health and sanity recovery with progress or healing items
+	    
+    Objectives and Floors
+	    Objective ideas
+		    Item that needs to be found
+		    Puzzle that needs to be done (maybe involving that item?)
+    Light
+	    Multiple sources
+	    Ignitable torches (tinderboxes too?)
+	    Multiple colours
+	    Two player FOVs, a short one that will show nearby items (using local light and the lantern), one that will show distant light sources
+	    Light intensity for each tile, lower the farther away from the source it is
+	    Low light intensities are less visible the farther away you are
+    Stealth mechanics
+	    Movement will cause noise
+	    Light intensity, noise, and sanity all factors in visibility
+	    Objects to hide in, will lower visibility but take extra actions to move out of and decrease visibility
+	    A dialog that tells you when you are being chased and when the monster is searching for you
+    Monster
+	    Monster paths directly to your location until you turn the lantern off, even if you go out of sight. Maybe path to and search the room you are in instead of pathing directly to your location? 
+    Game
+	    Pausing
+	    Saving and loading
+	    Delete save file on death
+	    Keep track of high scores
+    Code
+	    Refactor to decrease coupling
+	    Seperate files into src, lib, doc, res etc.
