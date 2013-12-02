@@ -1,2 +1,10 @@
 pyhack
 ======
+Pyhack is a roguelike version of Amnesia: The Dark Descent programmed in Python using the Libtcod library. Amnesia: The Dark Descent is a first person survival horror game developed by Frictional Games. In It, the player attempts to progress through the game while being hunted by a single terrifying monster. The player has no way to defend against it, and can only run and hide when spotted. There is also a sanity system where the player will lose sanity if he spends too much time in the dark or looks at the monster. Losing too much sanity will start to cause disturbing hallucinations that will hinder progress.
+
+Pyhack attempts to emulate these aspects of Amnesia. The monster will spawn after a random amount of time, attempt to chase down and kill the player, and despawn if it loses sight of the player for too long. When the monster is spawned the game is silently switched from turn based to real time gameplay to attempt to induce a sense of surprise and panic. When spotted, the player must get out of sight, turn off their lantern and avoid the monster for long enough that it despawns. 
+Time spent with the lantern off will reduce the player’s sanity. The less sane the player is, the more visible they are and the harder it is to hide. While the lantern is on, the lantern’s fuel will be drained. The lower the fuel gets, the dimmer the lantern shines until it eventually shuts off completely. Fuel can be replenished by picking up more off the ground.
+
+Movement is done with the arrow keys. Doors can be opened by pressing O then an arrow key, closed with P then an arrow key, and items can be picked up with C then an arrow key. The arrow key pressed must be in the direction of the object the player wants to perform the action on.
+
+Pyhack was a project I developed for one of my college classes while learning python. The previous paragraphs were copied from one of the doc files I had to hand it in with. I decided to put it on Github in case I want to do further development.
