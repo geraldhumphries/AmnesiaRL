@@ -1,4 +1,4 @@
-#!usr/bin/python
+# !usr/bin/python
 
 import libtcodpy as libtcod
 import math
@@ -199,7 +199,7 @@ class Monster(Entity):
         return self.can_see_player
 
     def compute_monster_fov(self):
-    # compute fov of an entity
+        # compute fov of an entity
         libtcod.map_compute_fov(self.fov_map,
                                 self.x,
                                 self.y,
@@ -237,7 +237,7 @@ class Monster(Entity):
         self.monster_index += 1
 
         if self.is_spawned and not self.check_see_player() and \
-                self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
+                        self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
             self.despawn()
             self.monster_index = 0
             self.monster_timer = libtcod.random_get_int(0, 50, 100)

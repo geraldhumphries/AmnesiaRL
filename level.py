@@ -1,4 +1,4 @@
-#!usr/bin/python
+# !usr/bin/python
 
 import libtcodpy as libtcod
 from entity import Door
@@ -84,12 +84,12 @@ class Level:
     def create_fov_maps(self):
         for y in range(self.height):
             for x in range(self.width):
-                    libtcod.map_set_properties(self.fov_map, x, y,
-                                               self.tiles[x][y].is_transparent,
-                                               self.tiles[x][y].is_walkable)
-                    libtcod.map_set_properties(self.monster_fov, x, y,
-                                               self.tiles[x][y].is_walkable,  # monster can see through doors
-                                               self.tiles[x][y].is_walkable)
+                libtcod.map_set_properties(self.fov_map, x, y,
+                                           self.tiles[x][y].is_transparent,
+                                           self.tiles[x][y].is_walkable)
+                libtcod.map_set_properties(self.monster_fov, x, y,
+                                           self.tiles[x][y].is_walkable,  # monster can see through doors
+                                           self.tiles[x][y].is_walkable)
 
     def create_room(self, room):
         # sets the "wall" tiles of a room to be "floor" tiles
@@ -148,10 +148,11 @@ class Level:
             adjacent_floors += 1
         if self.tiles[x - 1][y].is_walkable:
             adjacent_floors += 1
-        if self.tiles[x ][y - 1].is_walkable:
+        if self.tiles[x][y - 1].is_walkable:
             adjacent_floors += 1
 
         return adjacent_floors
+
     def add_stairs(self, game):
         added = False
         while not added:
@@ -190,7 +191,8 @@ class Level:
                             # floor
                             libtcod.console_put_char_ex(self.con, x, y, '.', self.color_unlit_floor, libtcod.BKGND_SET)
 
-    def compute_fov(self, fov_map, entity):
+    @staticmethod
+    def compute_fov(fov_map, entity):
         # compute fov of an entity
         libtcod.map_compute_fov(fov_map,
                                 entity.x,

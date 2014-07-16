@@ -1,4 +1,4 @@
-#!usr/bin/python
+# !usr/bin/python
 
 import libtcodpy as libtcod
 import entity
