@@ -1,13 +1,5 @@
 #!usr/bin/python
 
-# filename level.py
-# pyhack level module
-# generates the map and displays it on screen
-# author Gerald Humphries
-# course name Advanced Languages
-# course number CST8333
-# last modified 2013-11-25
-
 import libtcodpy as libtcod
 from entity import Door
 from entity import Fuel
@@ -15,17 +7,7 @@ from entity import Stairs
 
 
 class Level:
-    """
-    Purpose: Class for the area the game takes place in
-    Student Name: Gerald Humphries
-    """
     def __init__(self, width, height, con):
-        """
-        Purpose: constructor for class Level
-        Inputs to Function: width, height, con
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         self.width = width
         self.height = height
         self.con = con
@@ -49,12 +31,6 @@ class Level:
         self.rooms = []
 
     def create_map(self, player, game):
-        """
-        Purpose: creates and sets up the map
-        Inputs to Function: player, game
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # tile list
         self.tiles = [[Tile(False, x, y)
                        for y in range(self.height)]
@@ -106,12 +82,6 @@ class Level:
         self.create_fov_maps()
 
     def create_fov_maps(self):
-        """
-        Purpose: creates fov maps for the player and monster
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         for y in range(self.height):
             for x in range(self.width):
                     libtcod.map_set_properties(self.fov_map, x, y,
@@ -122,12 +92,6 @@ class Level:
                                                self.tiles[x][y].is_walkable)
 
     def create_room(self, room):
-        """
-        Purpose: creates a room from a rectangle
-        Inputs to Function: room
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # sets the "wall" tiles of a room to be "floor" tiles
         for x in range(room.x1 + 1, room.x2):
             for y in range(room.y1 + 1, room.y2):
@@ -135,12 +99,6 @@ class Level:
                 self.tiles[x][y].is_transparent = True
 
     def create_tunnel(self, start_x, start_y, end_x, end_y):
-        """
-        Purpose: creates a tunnel between two locations
-        Inputs to Function: start_x, start_y, end_x, end_y
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # create a path from one point to another
         x_length = end_x - start_x
         y_length = end_y - start_y
@@ -164,12 +122,6 @@ class Level:
                 self.tiles[x][end_y].is_transparent = True
 
     def add_doors(self, room, entities):
-        """
-        Purpose: adds doors to the map
-        Inputs to Function: room, entities
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         for x in range(room.x1, room.x2):
             # top edge
             if self.tiles[x][room.y1].is_walkable and self.num_adjacent_floors(x, room.y1) <= 2:
@@ -189,12 +141,6 @@ class Level:
                 entities.append(Door(room.x2, y, "+", libtcod.light_gray, self.con, entities, self))
 
     def num_adjacent_floors(self, x, y):
-        """
-        Purpose: checks the number of adjacent floors to a tile
-        Inputs to Function: x, y
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         adjacent_floors = 0
         if self.tiles[x + 1][y].is_walkable:
             adjacent_floors += 1
@@ -207,12 +153,6 @@ class Level:
 
         return adjacent_floors
     def add_stairs(self, game):
-        """
-        Purpose: adds items to the map
-        Inputs to Function: entities
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         added = False
         while not added:
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
@@ -222,12 +162,6 @@ class Level:
                 added = True
 
     def add_items(self, entities):
-        """
-        Purpose: adds items to the map
-        Inputs to Function: entities
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         for i in range(50):
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
             y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
@@ -235,12 +169,6 @@ class Level:
                 entities.append(Fuel(x, y, "*", libtcod.amber, self.con, entities, self))
 
     def draw(self, player):
-        """
-        Purpose: draws the map to the console
-        Inputs to Function: player
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # compute the player's fov
         self.compute_fov(self.fov_map, player)
 
@@ -263,12 +191,6 @@ class Level:
                             libtcod.console_put_char_ex(self.con, x, y, '.', self.color_unlit_floor, libtcod.BKGND_SET)
 
     def compute_fov(self, fov_map, entity):
-        """
-        Purpose: compute a specific fov from an entity
-        Inputs to Function: fov_map, entity
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # compute fov of an entity
         libtcod.map_compute_fov(fov_map,
                                 entity.x,
@@ -280,71 +202,31 @@ class Level:
 
 # helps make new rooms
 class Room:
-    """
-    Purpose: class that defines a rectangle shaped area
-    Student Name: Gerald Humphries
-
-    """
     def __init__(self, x, y, w, h):
-        """
-        Purpose: constructor for class Room
-        Inputs to Function:  x, y, w, h
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         self.x1 = x
         self.y1 = y
         self.x2 = x + w
         self.y2 = y + h
 
     def center(self):
-        """
-        Purpose: returns the center location of the room
-        Inputs to Function: no parameters
-        Outputs from Function: center_x, center_y
-        Student Name: Gerald Humphries
-        """
-        center_x = (self.x1 + self.x2) / 2
-        center_y = (self.y1 + self.y2) / 2
+        center_x = round((self.x1 + self.x2) / 2)
+        center_y = round((self.y1 + self.y2) / 2)
         return center_x, center_y
 
     # check if the room intersects with another
     def intersect(self, other):
-        """
-        Purpose: determines if this room intersects another one
-        Inputs to Function: other
-        Outputs from Function: True or False depending on outcome
-        Student Name: Gerald Humphries
-        """
         return (self.x1 <= other.x2 and self.x2 >= other.x1 and
                 self.y1 <= other.y2 and self.y2 >= other.y1)
 
     def contains_tile(self, x, y):
-        """
-        Purpose: determines if this room contains the specified location
-        Inputs to Function:  x, y
-        Outputs from Function: True or False depending on outcome
-        Student Name: Gerald Humphries
-        """
         return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
 
 
 class Tile:
-    """
-    Purpose: Class that represents a location on a grid
-    Student Name: Gerald Humphries
-    """
-
     # is_walkable means an entity cannot walk on the tile
     # is_transparent means an entity cannot see through it (not yet implemented)
     # revealed means the tile has been seen by the player
     def __init__(self, is_walkable, x, y, is_transparent=None, is_revealed=False):
-        """
-        Purpose: constructor for class Tile
-        Inputs to Function: is_walkable, x, y, is_transparent=None, is_revealed=False
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         self.is_walkable = is_walkable
         self.x = x
         self.y = y

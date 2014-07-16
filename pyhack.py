@@ -1,13 +1,5 @@
 #!usr/bin/python
 
-# filename pyhack.py
-# pyhack main module
-# starts and runs the program, accepts user input
-# author Gerald Humphries
-# course name Advanced Languages
-# course number CST8333
-# last modified 2013-11-25
-
 import libtcodpy as libtcod
 import entity
 from level import Level
@@ -20,26 +12,16 @@ MAP_HEIGHT = 40
 LIMIT_FPS = 25
 
 # libtcod specific settings
-libtcod.console_set_custom_font('terminal12x12_gs_ro.png',
+libtcod.console_set_custom_font(b'terminal12x12_gs_ro.png',
                                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'pyhack', False)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, b'pyhack', False)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
 libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_disable_keyboard_repeat()
 
 
 class Pyhack:
-    """
-    Purpose: Main class for the game
-    Student Name: Gerald Humphries
-    """
     def __init__(self):
-        """
-        Purpose: constructor for class Pyhack
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
         self.player = entity.Player(25, 23, '@', libtcod.white, con, self)
         self.monster = entity.Monster(25, 24, '&', libtcod.red, con, self, self.level, self.player)
@@ -49,12 +31,6 @@ class Pyhack:
         self.floor = 0
 
     def handle_keys(self):
-        """
-        Purpose: determines what key the player pressed (if any) then performs an action
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         # handles user input
 
         if self.turn_based:
@@ -109,12 +85,6 @@ class Pyhack:
                 self.player.perform_action(0, 1)
 
     def render(self):
-        """
-        Purpose: called by the main game loop to draw to the console and advance the game
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         if self.player.health > 0 and self.player.sanity > 0:
             # renders the game components
             libtcod.console_clear(con)
@@ -146,12 +116,6 @@ class Pyhack:
             return False
 
     def descend_floor(self):
-        """
-        Purpose: create a new map and place the player on it
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
         self.monster = entity.Monster(25, 24, '&', libtcod.red, con, self, self.level, self.player)
@@ -159,12 +123,6 @@ class Pyhack:
         self.level.create_map(self.player, self)
 
     def game_over(self):
-        """
-        Purpose: stops the game and displays the game over screen
-        Inputs to Function: no parameters
-        Outputs from Function: no return value
-        Student Name: Gerald Humphries
-        """
         game_over_string = "GAME OVER"
         game_over_result = ""
         game_over_score = "You made it " + str(self.floor) + " floors"
@@ -193,13 +151,7 @@ class Pyhack:
 
 
 def main():
-    """
-    Purpose: main function for the program
-    Inputs to Function: no parameters
-    Outputs from Function: no return value
-    Student Name: Gerald Humphries
-    """
-        # initializes the Pyhack object
+    # initializes the Pyhack object
     game = Pyhack()
 
     # constantly renders while the program window is still open
