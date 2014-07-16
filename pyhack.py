@@ -130,7 +130,7 @@ class Pyhack:
         if self.player.health <= 0:
             game_over_result = "You have died"
         elif self.player.sanity <= 0:
-            game_over_result = "You have gone stark raving mad, there is no hope of survival"
+            game_over_result = "You have gone stark raving mad"
 
         libtcod.console_clear(con)
 

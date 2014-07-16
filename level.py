@@ -7,15 +7,14 @@ from entity import Stairs
 
 
 class Level:
+    ROOM_MAX_SIZE = 10
+    ROOM_MIN_SIZE = 4
+    MAX_ROOMS = 30
+
     def __init__(self, width, height, con):
         self.width = width
         self.height = height
         self.con = con
-
-        # constants
-        self.ROOM_MAX_SIZE = 10
-        self.ROOM_MIN_SIZE = 4
-        self.MAX_ROOMS = 30
 
         # tile colors
         self.color_lit_floor = libtcod.Color(100, 100, 100)
@@ -30,12 +29,12 @@ class Level:
         # room list
         self.rooms = []
 
-    def create_map(self, player, game):
         # tile list
         self.tiles = [[Tile(False, x, y)
                        for y in range(self.height)]
                       for x in range(self.width)]
 
+    def create_map(self, player, game):
         number_of_rooms = 0
 
         for r in range(self.MAX_ROOMS):
@@ -225,8 +224,8 @@ class Room:
 
 
 class Tile:
-    # is_walkable means an entity cannot walk on the tile
-    # is_transparent means an entity cannot see through it (not yet implemented)
+    # is_walkable means an entity can walk on the tile
+    # is_transparent means an entity can see through the tile
     # revealed means the tile has been seen by the player
     def __init__(self, is_walkable, x, y, is_transparent=None, is_revealed=False):
         self.is_walkable = is_walkable
