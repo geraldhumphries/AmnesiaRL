@@ -29,10 +29,11 @@ class Entity:
                 return not entity.blocks_movement
         return True
 
-    def draw(self, fov_map):
+    def draw(self, fov_map, top_left, bottom_right):
         if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+            screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             libtcod.console_set_default_foreground(self.con, self.color)
-            libtcod.console_put_char(self.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+            libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
     def clear(self):
         libtcod.console_put_char(self.con, self.x, self.y, ' ', libtcod.BKGND_NONE)
@@ -40,6 +41,12 @@ class Entity:
     def tile_distance(self, x, y):
         distance = math.fabs(self.x - x) + math.fabs(self.y - y)
         return distance
+
+    @staticmethod
+    def screen_xy(self, top_left, bottom_right,  x, y):
+        screen_x = x - top_left[0]
+        screen_y = y - top_left[1]
+        return screen_x, screen_y
 
 
 class NextAction:
@@ -227,10 +234,11 @@ class Monster(Entity):
                     dy = y - self.y
                     self.move(dx, dy, self.level.tiles)
 
-    def draw(self, fov_map):
+    def draw(self, fov_map, top_left, bottom_right):
         if self.is_spawned and libtcod.map_is_in_fov(self.fov_map, self.x, self.y):
+            screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             libtcod.console_set_default_foreground(self.con, self.color)
-            libtcod.console_put_char(self.con, self.x, self.y, self.char, libtcod.BKGND_NONE)
+            libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
     def update(self):
         self.move_index += 1

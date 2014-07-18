@@ -5,16 +5,16 @@ import entity
 from level import Level
 
 # constants
-SCREEN_WIDTH = 80
-SCREEN_HEIGHT = 50
-MAP_WIDTH = 80
-MAP_HEIGHT = 40
+SCREEN_WIDTH = 79
+SCREEN_HEIGHT = 39
+MAP_WIDTH = 120
+MAP_HEIGHT = 80
 LIMIT_FPS = 25
 
 # libtcod specific settings
 libtcod.console_set_custom_font(b'terminal12x12_gs_ro.png',
                                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, b'pyhack', False)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + 10, b'pyhack', False)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
 libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_disable_keyboard_repeat()
@@ -23,8 +23,8 @@ libtcod.console_disable_keyboard_repeat()
 class Pyhack:
     def __init__(self):
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
-        self.player = entity.Player(25, 23, '@', libtcod.white, con, self)
-        self.monster = entity.Monster(25, 24, '&', libtcod.red, con, self, self.level, self.player)
+        self.player = entity.Player(6, 6, '@', libtcod.white, con, self)
+        self.monster = entity.Monster(7, 7, '&', libtcod.red, con, self, self.level, self.player)
         self.entities = [self.player, self.monster]
         self.turn_based = True
         self.level.create_map(self.player, self)
@@ -88,17 +88,17 @@ class Pyhack:
         if self.player.health > 0 and self.player.sanity > 0:
             # renders the game components
             libtcod.console_clear(con)
-            self.level.draw(self.player)
+            self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             for entity in reversed(self.entities):
-                entity.draw(self.level.fov_map)
+                entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right)
 
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
             libtcod.console_print(con, 5, 45, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
             libtcod.console_print(con, 5, 46, "Sanity: " + str(int(self.player.sanity)) + "  ")
             libtcod.console_print(con, 5, 47, "Health: " + str(int(self.player.health)) + "  ")
 
-            libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+            libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
 
             for entity in reversed(self.entities):
@@ -108,7 +108,7 @@ class Pyhack:
             self.player.update()
 
             # set the game to turn based if the monster is not spawned and real time if it is
-            self.turn_based = not self.monster.update()
+            # self.turn_based = not self.monster.update()
 
             return True
         else:

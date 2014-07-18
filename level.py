@@ -33,6 +33,10 @@ class Level:
         self.tiles = [[Tile(False, x, y)
                        for y in range(self.height)]
                       for x in range(self.width)]
+        
+        # screen
+        self.top_left = [0, 0]
+        self.bottom_right = [0, 0]
 
     def create_map(self, player, game):
         number_of_rooms = 0
@@ -168,27 +172,50 @@ class Level:
             if self.tiles[x][y].is_walkable:
                 entities.append(Fuel(x, y, "*", libtcod.amber, self.con, entities, self))
 
-    def draw(self, player):
+    def draw(self, player, screen_width, screen_height):
         # compute the player's fov
         self.compute_fov(self.fov_map, player)
+        self.top_left = [round(player.x - (screen_width - 1) / 2) - 1, round(player.y - (screen_height - 1) / 2) - 1]
+        self.bottom_right = [round(player.x + (screen_width - 1) / 2), round(player.y + (screen_height - 1) / 2)]
 
+        if self.bottom_right[0] > self.width:
+            self.top_left[0] = self.width - screen_width
+            self.bottom_right[0] = self.width
+
+        if self.top_left[0] < 0:
+            self.top_left[0] = 0
+            self.bottom_right[0] = screen_width
+
+        if self.bottom_right[1] > self.height:
+            self.top_left[1] = self.height - screen_height
+            self.bottom_right[1] = self.height
+
+        if self.top_left[1] < 0:
+            self.top_left[1] = 0
+            self.bottom_right[1] = screen_height
+
+        x_draw = 0
+        y_draw = 0
         # draw the level on the console
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in range(self.top_left[1], self.bottom_right[1]):
+            for x in range(self.top_left[0], self.bottom_right[0]):
                 if libtcod.map_is_in_fov(self.fov_map, x, y) or self.tiles[x][y].is_revealed:
                     self.tiles[x][y].is_revealed = True
                     if libtcod.map_is_in_fov(self.fov_map, x, y):
                         if not self.tiles[x][y].is_walkable:
-                            libtcod.console_put_char_ex(self.con, x, y, '#', self.color_lit_wall, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#', self.color_lit_wall, libtcod.BKGND_SET)
                         else:
                             # floor
-                            libtcod.console_put_char_ex(self.con, x, y, '.', self.color_lit_floor, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.', self.color_lit_floor, libtcod.BKGND_SET)
                     else:
                         if not self.tiles[x][y].is_walkable:
-                            libtcod.console_put_char_ex(self.con, x, y, '#', self.color_unlit_wall, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#', self.color_unlit_wall, libtcod.BKGND_SET)
                         else:
                             # floor
-                            libtcod.console_put_char_ex(self.con, x, y, '.', self.color_unlit_floor, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.', self.color_unlit_floor, libtcod.BKGND_SET)
+                x_draw += 1
+            y_draw += 1
+            x_draw = 0
 
     @staticmethod
     def compute_fov(fov_map, entity):
