@@ -9,7 +9,7 @@ from entity import Stairs
 class Level:
     ROOM_MAX_SIZE = 10
     ROOM_MIN_SIZE = 4
-    MAX_ROOMS = 30
+    MAX_ROOMS = 60
 
     def __init__(self, width, height, con):
         self.width = width
