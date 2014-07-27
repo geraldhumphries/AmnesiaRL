@@ -95,22 +95,22 @@ class Player(Entity):
         self.performing_action = False
         if self.next_action == NextAction.open:
             for entity in self.game.entities:
-                if entity.char == "+" and self.x + x == entity.x and self.y + y == entity.y:
+                if entity.char == Door.closed_char and self.x + x == entity.x and self.y + y == entity.y:
                     entity.open()
                     return
         elif self.next_action == NextAction.close:
             for entity in self.game.entities:
-                if entity.char == "-" and self.x + x == entity.x and self.y + y == entity.y:
+                if entity.char == Door.open_char and self.x + x == entity.x and self.y + y == entity.y:
                     entity.close()
                     return
         elif self.next_action == NextAction.pick_up:
             for entity in self.game.entities:
-                if entity.char == "*" and self.x + x == entity.x and self.y + y == entity.y:
+                if entity.char == Fuel.class_char and self.x + x == entity.x and self.y + y == entity.y:
                     self.fuel += entity.collect()
                     return
         elif self.next_action == NextAction.descend:
             for entity in self.game.entities:
-                if entity.char == "S" and self.x + x == entity.x and self.y + y == entity.y:
+                if entity.char == Stairs.class_char and self.x + x == entity.x and self.y + y == entity.y:
                     entity.descend()
                     return
 
@@ -150,9 +150,10 @@ class Player(Entity):
 
 class Monster(Entity):
     SPAWN_DISTANCE = 15
+    class_char = '&'
 
     def __init__(self, x, y, con, game, level, player):
-        Entity.__init__(self, x, y, '&', libtcod.red, True, con, game)
+        Entity.__init__(self, x, y, self.class_char, libtcod.red, True, con, game)
         # spawning and timing
         self.is_spawned = False
         self.monster_timer = libtcod.random_get_int(0, 30, 100)
@@ -269,9 +270,11 @@ class Monster(Entity):
 
 class Door(Entity):
     BASE_LOCK_STRENGTH = 3
+    closed_char = "+"
+    open_char = "-"
 
-    def __init__(self, x, y, char, color, con, entities, level, is_open=False):
-        Entity.__init__(self, x, y, char, color, True, con, None)
+    def __init__(self, x, y, con, entities, level, is_open=False):
+        Entity.__init__(self, x, y, self.closed_char, libtcod.light_gray, True, con, None)
 
         self.is_open = is_open
         self.lock_strength = self.BASE_LOCK_STRENGTH
@@ -281,14 +284,14 @@ class Door(Entity):
     def open(self):
         self.is_open = True
         self.blocks_movement = False
-        self.char = "-"
+        self.char = self.open_char
         self.level.tiles[self.x][self.y].is_transparent = True
         self.level.create_fov_maps()
 
     def close(self):
         self.is_open = False
         self.blocks_movement = True
-        self.char = "+"
+        self.char = self.closed_char
         self.lock_strength = self.BASE_LOCK_STRENGTH
         self.level.tiles[self.x][self.y].is_transparent = False
         self.level.create_fov_maps()
@@ -300,8 +303,10 @@ class Door(Entity):
 
 
 class Fuel(Entity):
+    class_char = "*"
+
     def __init__(self, x, y, con):
-        Entity.__init__(self, x, y, "*", libtcod.amber, False, con, None)
+        Entity.__init__(self, x, y, self.class_char, libtcod.amber, False, con, None)
         self.amount = libtcod.random_get_int(0, 10, 30)
 
     def collect(self):
@@ -311,8 +316,10 @@ class Fuel(Entity):
 
 
 class Stairs(Entity):
+    class_char = "s"
+
     def __init__(self, x, y, con, game):
-        Entity.__init__(self, x, y, "s", libtcod.light_green, False, con, None)
+        Entity.__init__(self, x, y, self.class_char, libtcod.light_green, False, con, None)
         self.game = game
 
     def descend(self):
@@ -320,8 +327,10 @@ class Stairs(Entity):
 
 
 class Closet(Entity):
+    class_char = "c"
+
     def __init__(self, x, y, con):
-        Entity.__init__(self, x, y, "c", libtcod.azure, True, con, None)
+        Entity.__init__(self, x, y, self.class_char, libtcod.azure, True, con, None)
         self.strength = 5
         self.is_destroyed = False
         self.destroyed_char = "c"

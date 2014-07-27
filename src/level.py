@@ -129,20 +129,20 @@ class Level:
         for x in range(room.x1, room.x2):
             # top edge
             if self.tiles[x][room.y1].is_walkable and self.num_adjacent_floors(x, room.y1) <= 2:
-                entities.append(Door(x, room.y1, "+", libtcod.light_gray, self.con, entities, self))
+                entities.append(Door(x, room.y1, self.con, entities, self))
 
             # bottom edge
             if self.tiles[x][room.y2].is_walkable and self.num_adjacent_floors(x, room.y2) <= 2:
-                entities.append(Door(x, room.y2, "+", libtcod.light_gray, self.con, entities, self))
+                entities.append(Door(x, room.y2, self.con, entities, self))
 
         for y in range(room.y1, room.y2):
             # left edge
             if self.tiles[room.x1][y].is_walkable and self.num_adjacent_floors(room.x1, y) <= 2:
-                entities.append(Door(room.x1, y, "+", libtcod.light_gray, self.con, entities, self))
+                entities.append(Door(room.x1, y, self.con, entities, self))
 
             # right edge
             if self.tiles[room.x2][y].is_walkable and self.num_adjacent_floors(room.x2, y) <= 2:
-                entities.append(Door(room.x2, y, "+", libtcod.light_gray, self.con, entities, self))
+                entities.append(Door(room.x2, y, self.con, entities, self))
 
     def num_adjacent_floors(self, x, y):
         adjacent_floors = 0
