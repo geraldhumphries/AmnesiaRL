@@ -7,6 +7,7 @@ from src.level import Level
 # constants
 SCREEN_WIDTH = 59
 SCREEN_HEIGHT = 25
+INTERFACE_HEIGHT = 10
 MAP_WIDTH = 80
 MAP_HEIGHT = 60
 LIMIT_FPS = 25
@@ -14,8 +15,8 @@ LIMIT_FPS = 25
 # libtcod specific settings
 libtcod.console_set_custom_font(b'res/terminal12x12_gs_ro.png',
                                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + 10, b'pyhack', False)
-con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT + 10)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT, b'pyhack', False)
+con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT)
 libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_disable_keyboard_repeat()
 
