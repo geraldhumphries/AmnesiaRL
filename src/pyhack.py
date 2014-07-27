@@ -109,7 +109,7 @@ class Pyhack:
             self.player.update()
 
             # set the game to turn based if the monster is not spawned and real time if it is
-            # self.turn_based = not self.monster.update()
+            self.turn_based = not self.monster.update()
 
             return True
         else:
