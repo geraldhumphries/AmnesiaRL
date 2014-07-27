@@ -1,15 +1,15 @@
 # !usr/bin/python
 
-import libtcodpy as libtcod
-from entity import Door
-from entity import Fuel
-from entity import Stairs
+from lib import libtcodpy as libtcod
+from src.entity import Door, Closet
+from src.entity import Fuel
+from src.entity import Stairs
 
 
 class Level:
     ROOM_MAX_SIZE = 10
     ROOM_MIN_SIZE = 4
-    MAX_ROOMS = 60
+    MAX_ROOMS = 30
 
     def __init__(self, width, height, con):
         self.width = width
@@ -77,6 +77,7 @@ class Level:
         # add doors
         for room in self.rooms:
             self.add_doors(room, game.entities)
+            self.add_closets(room, game.entities)
 
         self.add_items(game.entities)
         self.add_stairs(game)
@@ -156,13 +157,34 @@ class Level:
 
         return adjacent_floors
 
+    def add_closets(self, room, entities):
+        odds = 50  # 1 in [odds] chance that a closet will spawn for every tile adjacent to a wall in a room
+        for x in range(room.x1, room.x2):
+
+            # top edge
+            if self.tiles[x][room.y1 + 1].is_walkable and self.will_spawn(odds):
+                entities.append(Closet(x, room.y1 + 1, self.con))
+
+            # bottom edge
+            if self.tiles[x][room.y2 - 1].is_walkable and self.will_spawn(odds):
+                entities.append(Closet(x, room.y2 - 1, self.con))
+
+        for y in range(room.y1, room.y2):
+            # left edge
+            if self.tiles[room.x1 + 1][y].is_walkable and self.will_spawn(odds):
+                entities.append(Closet(room.x1 + 1, y, self.con))
+
+            # right edge
+            if self.tiles[room.x2 - 1][y].is_walkable and self.will_spawn(odds):
+                entities.append(Closet(room.x2 - 1, y, self.con))
+
     def add_stairs(self, game):
         added = False
         while not added:
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
             y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
             if self.tiles[x][y].is_walkable:
-                game.entities.append(Stairs(x, y, "S", libtcod.light_green, self.con, game))
+                game.entities.append(Stairs(x, y, self.con, game))
                 added = True
 
     def add_items(self, entities):
@@ -170,12 +192,16 @@ class Level:
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
             y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
             if self.tiles[x][y].is_walkable:
-                entities.append(Fuel(x, y, "*", libtcod.amber, self.con, entities, self))
+                entities.append(Fuel(x, y, self.con))
 
     def draw(self, player, screen_width, screen_height):
         # compute the player's fov
         self.compute_fov(self.fov_map, player)
+        tlx = round(player.x - (screen_width - 1) / 2) - 1
+        tly = round(player.y - (screen_height - 1) / 2) - 1
         self.top_left = [round(player.x - (screen_width - 1) / 2) - 1, round(player.y - (screen_height - 1) / 2) - 1]
+        brx = round(player.x + (screen_width - 1) / 2)
+        bry = round(player.y + (screen_height - 1) / 2)
         self.bottom_right = [round(player.x + (screen_width - 1) / 2), round(player.y + (screen_height - 1) / 2)]
 
         if self.bottom_right[0] > self.width:
@@ -226,6 +252,10 @@ class Level:
                                 entity.sight_range,  # entity's default sight range plus light source
                                 True,
                                 libtcod.FOV_RESTRICTIVE)
+
+    @staticmethod
+    def will_spawn(odds):
+        return libtcod.random_get_int(0, 0, odds) == odds
 
 
 # helps make new rooms

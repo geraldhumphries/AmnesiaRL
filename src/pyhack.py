@@ -1,21 +1,21 @@
 # !usr/bin/python
 
-import libtcodpy as libtcod
-import entity
-from level import Level
+from lib import libtcodpy as libtcod
+from src import entity
+from src.level import Level
 
 # constants
-SCREEN_WIDTH = 79
-SCREEN_HEIGHT = 39
-MAP_WIDTH = 120
-MAP_HEIGHT = 80
+SCREEN_WIDTH = 59
+SCREEN_HEIGHT = 25
+MAP_WIDTH = 80
+MAP_HEIGHT = 60
 LIMIT_FPS = 25
 
 # libtcod specific settings
-libtcod.console_set_custom_font(b'terminal12x12_gs_ro.png',
+libtcod.console_set_custom_font(b'res/terminal12x12_gs_ro.png',
                                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + 10, b'pyhack', False)
-con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT)
+con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT + 10)
 libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_disable_keyboard_repeat()
 
@@ -23,8 +23,8 @@ libtcod.console_disable_keyboard_repeat()
 class Pyhack:
     def __init__(self):
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
-        self.player = entity.Player(6, 6, '@', libtcod.white, con, self)
-        self.monster = entity.Monster(7, 7, '&', libtcod.red, con, self, self.level, self.player)
+        self.player = entity.Player(0, 0, con, self)
+        self.monster = entity.Monster(0, 0, con, self, self.level, self.player)
         self.entities = [self.player, self.monster]
         self.turn_based = True
         self.level.create_map(self.player, self)
@@ -94,9 +94,9 @@ class Pyhack:
                 entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right)
 
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
-            libtcod.console_print(con, 5, 45, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
-            libtcod.console_print(con, 5, 46, "Sanity: " + str(int(self.player.sanity)) + "  ")
-            libtcod.console_print(con, 5, 47, "Health: " + str(int(self.player.health)) + "  ")
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "Sanity: " + str(int(self.player.sanity)) + "  ")
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Health: " + str(int(self.player.health)) + "  ")
 
             libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
@@ -118,7 +118,7 @@ class Pyhack:
     def descend_floor(self):
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
-        self.monster = entity.Monster(25, 24, '&', libtcod.red, con, self, self.level, self.player)
+        self.monster = entity.Monster(25, 24, con, self, self.level, self.player)
         self.entities = [self.player, self.monster]
         self.level.create_map(self.player, self)
 

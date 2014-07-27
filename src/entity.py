@@ -1,10 +1,12 @@
 # !usr/bin/python
 
-import libtcodpy as libtcod
 import math
 
 
 # entities are the player, objects, items and enemies
+from lib import libtcodpy as libtcod
+
+
 class Entity:
     def __init__(self, x, y, char, color, blocks_movement, con, game):
         self.x = x
@@ -52,13 +54,16 @@ class Entity:
 class NextAction:
     open = 0  # open a door
     close = 1  # close a door
+    enter = 3  # enter a closet
     pick_up = 2  # pick up an item
     descend = 4  # descend a floor
 
 
 class Player(Entity):
-    def __init__(self, x, y, char, color, con, game):
-        Entity.__init__(self, x, y, char, color, True, con, game)
+    BASE_SIGHT_RANGE = 2
+
+    def __init__(self, x, y, con, game):
+        Entity.__init__(self, x, y, '@', libtcod.white, True, con, game)
 
         # player stats
         self.sanity = 100.0  # sanity in %
@@ -66,7 +71,6 @@ class Player(Entity):
         self.fuel = 50.0  # oil lamp fuel in %
 
         # lamp and sight
-        self.BASE_SIGHT_RANGE = 2
         self.lamp_range = 5  # oil lamp range, decreases as fuel gets low
         self.sight_range = self.BASE_SIGHT_RANGE + self.lamp_range  # current sight range
         self.is_lamp_on = True
@@ -145,12 +149,13 @@ class Player(Entity):
 
 
 class Monster(Entity):
-    def __init__(self, x, y, char, color, con, game, level, player):
-        Entity.__init__(self, x, y, char, color, True, con, game)
+    SPAWN_DISTANCE = 15
+
+    def __init__(self, x, y, con, game, level, player):
+        Entity.__init__(self, x, y, '&', libtcod.red, True, con, game)
         # spawning and timing
         self.is_spawned = False
-        self.SPAWN_DISTANCE = 15
-        self.monster_timer = libtcod.random_get_int(0, 30, 30)
+        self.monster_timer = libtcod.random_get_int(0, 30, 100)
         self.monster_index = 0
         self.move_index = 0
 
@@ -245,7 +250,7 @@ class Monster(Entity):
         self.monster_index += 1
 
         if self.is_spawned and not self.check_see_player() and \
-                        self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
+                self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
             self.despawn()
             self.monster_index = 0
             self.monster_timer = libtcod.random_get_int(0, 50, 100)
@@ -263,11 +268,12 @@ class Monster(Entity):
 
 
 class Door(Entity):
+    BASE_LOCK_STRENGTH = 3
+
     def __init__(self, x, y, char, color, con, entities, level, is_open=False):
         Entity.__init__(self, x, y, char, color, True, con, None)
 
         self.is_open = is_open
-        self.BASE_LOCK_STRENGTH = 3
         self.lock_strength = self.BASE_LOCK_STRENGTH
         self.level = level
         self.level.tiles[x][y].is_transparent = False
@@ -294,20 +300,57 @@ class Door(Entity):
 
 
 class Fuel(Entity):
-    def __init__(self, x, y, char, color, con, entities, level):
-        Entity.__init__(self, x, y, char, color, False, con, None)
+    def __init__(self, x, y, con):
+        Entity.__init__(self, x, y, "*", libtcod.amber, False, con, None)
+        self.amount = libtcod.random_get_int(0, 10, 30)
 
     def collect(self):
         self.x = None
         self.y = None
-        return 10
+        return self.amount
 
 
 class Stairs(Entity):
-    def __init__(self, x, y, char, color, con, game):
-        Entity.__init__(self, x, y, char, color, False, con, None)
+    def __init__(self, x, y, con, game):
+        Entity.__init__(self, x, y, "s", libtcod.light_green, False, con, None)
         self.game = game
 
     def descend(self):
         self.game.descend_floor()
 
+
+class Closet(Entity):
+    def __init__(self, x, y, con):
+        Entity.__init__(self, x, y, "c", libtcod.azure, True, con, None)
+        self.strength = 5
+        self.is_destroyed = False
+        self.destroyed_char = "c"
+        self.destroyed_color = libtcod.dark_azure
+
+    def enter(self):
+        return
+
+    def exit(self):
+        return
+
+    def draw(self, fov_map, top_left, bottom_right):
+        if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+            screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
+            if not self.is_destroyed:
+                libtcod.console_set_default_foreground(self.con, self.color)
+                libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
+            else:
+                libtcod.console_set_default_foreground(self.con, self.destroyed_color)
+                libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
+
+
+    def bash(self):
+        self.strength -= 1
+        if self.strength <= 0:
+            self.destroy()
+
+    def destroy(self):
+        self.exit()
+        self.blocks_movement = False
+        self.char = self.destroyed_char
+        self.color = self.destroyed_color
