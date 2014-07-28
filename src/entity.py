@@ -57,6 +57,7 @@ class NextAction:
     enter = 3  # enter a closet
     pick_up = 2  # pick up an item
     descend = 4  # descend a floor
+    grab = 5  # grab an entity
 
 
 class Player(Entity):
@@ -68,6 +69,7 @@ class Player(Entity):
         # player stats
         self.sanity = 100.0  # sanity in %
         self.health = 100  # health in %
+        self.stamina = 100.0  # stamina in %
         self.fuel = 50.0  # oil lamp fuel in %
 
         # lamp and sight
@@ -79,6 +81,8 @@ class Player(Entity):
         # actions
         self.performing_action = False
         self.next_action = -1
+        self.grabbed_entity = None
+        self.is_moving_entity = False
 
     def toggle_lamp(self, is_lamp_on=None):
         if is_lamp_on is None:
@@ -113,8 +117,39 @@ class Player(Entity):
                 if entity.char == Stairs.class_char and self.x + x == entity.x and self.y + y == entity.y:
                     entity.descend()
                     return
+        elif self.next_action == NextAction.grab:
+            for entity in self.game.entities:
+                if entity.char == Closet.class_char and self.x + x == entity.x and self.y + y == entity.y:
+                    self.grab(entity)
+                    return
+
+    def grab(self, entity):
+        self.grabbed_entity = entity
+        self.is_moving_entity = True
+
+    def drop(self):
+        self.grabbed_entity = None
+        self.is_moving_entity = False
+
+    def move(self, dx, dy, tiles):
+        has_moved = False
+        if self.stamina >= 5 and tiles[self.x + dx][self.y + dy].is_walkable and \
+                self.check_is_walkable(self.x + dx, self.y + dy):
+            if self.is_moving_entity:
+                if self.stamina >= 15:
+                    self.grabbed_entity.x = self.x
+                    self.grabbed_entity.y = self.y
+                    self.stamina -= 10
+                else:
+                    self.drop()
+            self.x += dx
+            self.y += dy
+            has_moved = True
+            self.stamina -= 5
+        return has_moved
 
     def update(self):
+        # fuel
         if self.is_lamp_on and self.fuel >= 0:
             if self.game.turn_based:
                 self.fuel -= 0.2
@@ -146,6 +181,15 @@ class Player(Entity):
                 self.visibility = 2
             elif 0 <= self.sanity < 30:
                 self.visibility = 3
+
+        # stamina
+        if self.game.turn_based:
+            self.stamina += 6
+        else:
+            self.stamina += 0.7
+
+        if self.stamina > 100:
+            self.stamina = 100
 
 
 class Monster(Entity):
@@ -231,7 +275,8 @@ class Monster(Entity):
             else:
                 can_move = True
                 for entity in self.game.entities:
-                    if x == entity.x and y == entity.y and entity.char == "+":
+                    if entity.blocks_movement and x == entity.x and y == entity.y and \
+                            (entity.char == Door.closed_char or entity.char == Closet.class_char):
                         entity.bash()
                         can_move = False
                 if can_move:
@@ -269,7 +314,7 @@ class Monster(Entity):
 
 
 class Door(Entity):
-    BASE_LOCK_STRENGTH = 3
+    BASE_STRENGTH = 5
     closed_char = "+"
     open_char = "-"
 
@@ -277,7 +322,7 @@ class Door(Entity):
         Entity.__init__(self, x, y, self.closed_char, libtcod.light_gray, True, con, None)
 
         self.is_open = is_open
-        self.lock_strength = self.BASE_LOCK_STRENGTH
+        self.strength = self.BASE_STRENGTH
         self.level = level
         self.level.tiles[x][y].is_transparent = False
 
@@ -292,13 +337,13 @@ class Door(Entity):
         self.is_open = False
         self.blocks_movement = True
         self.char = self.closed_char
-        self.lock_strength = self.BASE_LOCK_STRENGTH
+        self.strength = self.BASE_STRENGTH
         self.level.tiles[self.x][self.y].is_transparent = False
         self.level.create_fov_maps()
 
     def bash(self):
-        self.lock_strength -= 1
-        if self.lock_strength <= 0:
+        self.strength -= 1
+        if self.strength <= 0:
             self.open()
 
 
@@ -328,30 +373,34 @@ class Stairs(Entity):
 
 class Closet(Entity):
     class_char = "c"
+    class_color = libtcod.azure
+    BASE_STRENGTH = 5
 
     def __init__(self, x, y, con):
         Entity.__init__(self, x, y, self.class_char, libtcod.azure, True, con, None)
-        self.strength = 5
+        self.strength = self.BASE_STRENGTH
         self.is_destroyed = False
-        self.destroyed_char = "c"
-        self.destroyed_color = libtcod.dark_azure
+        self.destroyed_color = libtcod.darker_azure
+        self.hiding_color = libtcod.light_azure
 
     def enter(self):
-        return
+        self.color = self.hiding_color
 
     def exit(self):
-        return
+        self.color = self.class_color
+
+    def grab(self, x, y):
+        self.x += self.x - x
+        self.y += self.y - y
 
     def draw(self, fov_map, top_left, bottom_right):
         if libtcod.map_is_in_fov(fov_map, self.x, self.y):
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
-            if not self.is_destroyed:
-                libtcod.console_set_default_foreground(self.con, self.color)
-                libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
-            else:
+            if self.is_destroyed:
                 libtcod.console_set_default_foreground(self.con, self.destroyed_color)
-                libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
-
+            else:
+                libtcod.console_set_default_foreground(self.con, self.color)
+            libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
     def bash(self):
         self.strength -= 1
@@ -361,5 +410,4 @@ class Closet(Entity):
     def destroy(self):
         self.exit()
         self.blocks_movement = False
-        self.char = self.destroyed_char
         self.color = self.destroyed_color

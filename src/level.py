@@ -197,11 +197,7 @@ class Level:
     def draw(self, player, screen_width, screen_height):
         # compute the player's fov
         self.compute_fov(self.fov_map, player)
-        tlx = round(player.x - (screen_width - 1) / 2) - 1
-        tly = round(player.y - (screen_height - 1) / 2) - 1
         self.top_left = [round(player.x - (screen_width - 1) / 2) - 1, round(player.y - (screen_height - 1) / 2) - 1]
-        brx = round(player.x + (screen_width - 1) / 2)
-        bry = round(player.y + (screen_height - 1) / 2)
         self.bottom_right = [round(player.x + (screen_width - 1) / 2), round(player.y + (screen_height - 1) / 2)]
 
         if self.bottom_right[0] > self.width:

@@ -72,6 +72,13 @@ class Pyhack:
             elif key.c == ord('d'):
                 self.player.performing_action = True
                 self.player.next_action = entity.NextAction.descend
+
+            elif key.c == ord('i'):
+                self.player.performing_action = True
+                self.player.next_action = entity.NextAction.grab
+
+            elif key.c == ord('u'):
+                self.player.drop()
         else:
             if key.vk == libtcod.KEY_LEFT:
                 self.player.perform_action(-1, 0)
@@ -98,6 +105,7 @@ class Pyhack:
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "Sanity: " + str(int(self.player.sanity)) + "  ")
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Health: " + str(int(self.player.health)) + "  ")
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Stamina: " + str(int(self.player.stamina)) + "  ")
 
             libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
@@ -136,16 +144,16 @@ class Pyhack:
         libtcod.console_clear(con)
 
         libtcod.console_set_default_foreground(con, libtcod.red)
-        libtcod.console_print(con, SCREEN_WIDTH / 2 - len(game_over_string) / 2, SCREEN_HEIGHT / 2 - 5,
+        libtcod.console_print(con, round(SCREEN_WIDTH / 2 - len(game_over_string) / 2), round(SCREEN_HEIGHT / 2 - 5),
                               game_over_string)
         libtcod.console_set_default_foreground(con, libtcod.white)
-        libtcod.console_print(con, SCREEN_WIDTH / 2 - len(game_over_result) / 2, SCREEN_HEIGHT / 2 - 4,
+        libtcod.console_print(con, round(SCREEN_WIDTH / 2 - len(game_over_result) / 2), round(SCREEN_HEIGHT / 2 - 4),
                               game_over_result)
-        libtcod.console_print(con, SCREEN_WIDTH / 2 - len(game_over_score) / 2, SCREEN_HEIGHT / 2 - 2,
+        libtcod.console_print(con, round(SCREEN_WIDTH / 2 - len(game_over_score) / 2), round(SCREEN_HEIGHT / 2 - 2),
                               game_over_score)
-        libtcod.console_print(con, SCREEN_WIDTH / 2 - len(game_over_instructions) / 2, SCREEN_HEIGHT / 2 - 1,
-                              game_over_instructions)
-        libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
+        libtcod.console_print(con, round(SCREEN_WIDTH / 2 - len(game_over_instructions) / 2),
+                              round(SCREEN_HEIGHT / 2 - 1), game_over_instructions)
+        libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT, 0, 0, 0)
         libtcod.console_flush()
 
         libtcod.console_wait_for_keypress(True)
