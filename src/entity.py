@@ -62,9 +62,11 @@ class NextAction:
 
 class Player(Entity):
     BASE_SIGHT_RANGE = 2
+    class_char = '@'
+    class_color = libtcod.white
 
     def __init__(self, x, y, con, game):
-        Entity.__init__(self, x, y, '@', libtcod.white, True, con, game)
+        Entity.__init__(self, x, y, self.class_char, self.class_color, True, con, game)
 
         # player stats
         self.sanity = 100.0  # sanity in %
@@ -195,9 +197,10 @@ class Player(Entity):
 class Monster(Entity):
     SPAWN_DISTANCE = 15
     class_char = '&'
+    class_color = libtcod.red
 
     def __init__(self, x, y, con, game, level, player):
-        Entity.__init__(self, x, y, self.class_char, libtcod.red, True, con, game)
+        Entity.__init__(self, x, y, self.class_char, self.class_color, True, con, game)
         # spawning and timing
         self.is_spawned = False
         self.monster_timer = libtcod.random_get_int(0, 30, 100)
@@ -317,9 +320,10 @@ class Door(Entity):
     BASE_STRENGTH = 5
     closed_char = "+"
     open_char = "-"
+    class_color = libtcod.light_gray
 
     def __init__(self, x, y, con, entities, level, is_open=False):
-        Entity.__init__(self, x, y, self.closed_char, libtcod.light_gray, True, con, None)
+        Entity.__init__(self, x, y, self.closed_char, self.class_color, True, con, None)
 
         self.is_open = is_open
         self.strength = self.BASE_STRENGTH
@@ -349,9 +353,10 @@ class Door(Entity):
 
 class Fuel(Entity):
     class_char = "*"
+    class_color = libtcod.amber
 
     def __init__(self, x, y, con):
-        Entity.__init__(self, x, y, self.class_char, libtcod.amber, False, con, None)
+        Entity.__init__(self, x, y, self.class_char, self.class_color, False, con, None)
         self.amount = libtcod.random_get_int(0, 10, 30)
 
     def collect(self):
@@ -362,9 +367,10 @@ class Fuel(Entity):
 
 class Stairs(Entity):
     class_char = "s"
+    class_color = libtcod.light_green
 
     def __init__(self, x, y, con, game):
-        Entity.__init__(self, x, y, self.class_char, libtcod.light_green, False, con, None)
+        Entity.__init__(self, x, y, self.class_char, self.class_color, False, con, None)
         self.game = game
 
     def descend(self):
