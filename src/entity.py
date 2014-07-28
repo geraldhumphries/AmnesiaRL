@@ -195,7 +195,7 @@ class Player(Entity):
 
 
 class Monster(Entity):
-    SPAWN_DISTANCE = 15
+    SPAWN_DISTANCE = 12
     class_char = '&'
     class_color = libtcod.red
 
@@ -290,6 +290,9 @@ class Monster(Entity):
 
     def draw(self, fov_map, top_left, bottom_right):
         if self.is_spawned and libtcod.map_is_in_fov(self.fov_map, self.x, self.y):
+            # set the game to real time when the player sees the monster
+            if self.game.turn_based:
+                self.game.turn_based = False
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             libtcod.console_set_default_foreground(self.con, self.color)
             libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
@@ -309,11 +312,13 @@ class Monster(Entity):
             self.monster_timer = self.move_speed
             self.spawn(self.player, self.level.tiles)
 
-        elif self.move_index > self.move_speed and self.is_spawned:
+        elif self.is_spawned and not self.game.turn_based and self.move_index > self.move_speed:
             self.move_index = 0
             self.monster_action()
 
-        return self.is_spawned
+        elif self.is_spawned and self.game.turn_based:
+            self.move_index = 0
+            self.monster_action()
 
 
 class Door(Entity):
