@@ -23,9 +23,9 @@ libtcod.console_disable_keyboard_repeat()
 
 class Pyhack:
     def __init__(self):
-        self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
-        self.player = entity.Player(0, 0, con, self)
-        self.monster = entity.Monster(0, 0, con, self, self.level, self.player)
+        self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
+        self.player = entity.Player(0, 0, self.level.fov_map, con, self)
+        self.monster = entity.Monster(0, 0, self.level, self.player, self.level.fov_map, con, self)
         self.entities = [self.player, self.monster]
         self.turn_based = True
         self.level.create_map(self.player, self)
@@ -35,7 +35,7 @@ class Pyhack:
         # handles user input
 
         if self.turn_based:
-            # causes the game to pause to wait for user input
+            # game will pause to wait for user input
             key = libtcod.console_wait_for_keypress(True)
         else:
             # game will continue without user input
@@ -99,7 +99,7 @@ class Pyhack:
             self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             for entity in reversed(self.entities):
-                entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right)
+                entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
 
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
@@ -124,8 +124,8 @@ class Pyhack:
 
     def descend_floor(self):
         self.floor += 1
-        self.level = Level(MAP_WIDTH, MAP_HEIGHT, con)
-        self.monster = entity.Monster(25, 24, con, self, self.level, self.player)
+        self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
+        self.monster = entity.Monster(25, 24, self.level, self.player, con, self)
         self.entities = [self.player, self.monster]
         self.level.create_map(self.player, self)
 

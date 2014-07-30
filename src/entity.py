@@ -1,14 +1,14 @@
 # !usr/bin/python
 
 import math
+from lib import libtcodpy as libtcod
+from src.pathing import Light
+from src.pathing import Noise
 
 
 # entities are the player, objects, items and enemies
-from lib import libtcodpy as libtcod
-
-
 class Entity:
-    def __init__(self, x, y, char, color, blocks_movement, con, game):
+    def __init__(self, x, y, char, color, blocks_movement, light, noise, entity_fov_map, con, game):
         self.x = x
         self.y = y
         self.char = char
@@ -16,6 +16,9 @@ class Entity:
         self.con = con
         self.game = game
         self.blocks_movement = blocks_movement
+        self.light = light
+        self.noise = noise
+        self.entity_fov_map = entity_fov_map
 
     def move(self, dx, dy, tiles):
         has_moved = False
@@ -31,11 +34,20 @@ class Entity:
                 return not entity.blocks_movement
         return True
 
-    def draw(self, fov_map, top_left, bottom_right):
-        if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+    def draw(self, fov_map, top_left, bottom_right, tiles):
+        self.light.calculate_tile_brightness(tiles, self.x, self.y, top_left, bottom_right)
+        if libtcod.map_is_in_fov(fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             libtcod.console_set_default_foreground(self.con, self.color)
             libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
+
+    def compute_fov(self, sight_range):
+        libtcod.map_compute_fov(self.entity_fov_map,
+                                self.x,
+                                self.y,
+                                sight_range,
+                                True,
+                                libtcod.FOV_RESTRICTIVE)
 
     def clear(self):
         libtcod.console_put_char(self.con, self.x, self.y, ' ', libtcod.BKGND_NONE)
@@ -61,12 +73,13 @@ class NextAction:
 
 
 class Player(Entity):
-    BASE_SIGHT_RANGE = 2
+    BASE_SIGHT_RANGE = 25
     class_char = '@'
     class_color = libtcod.white
 
-    def __init__(self, x, y, con, game):
-        Entity.__init__(self, x, y, self.class_char, self.class_color, True, con, game)
+    def __init__(self, x, y, fov_map, con, game):
+        Entity.__init__(self, x, y, self.class_char, self.class_color, True,
+                        Light(0, con, game), Noise(x, y, 1, con, game), fov_map, con, game)
 
         # player stats
         self.sanity = 100.0  # sanity in %
@@ -76,26 +89,31 @@ class Player(Entity):
 
         # lamp and sight
         self.lamp_range = 5  # oil lamp range, decreases as fuel gets low
-        self.sight_range = self.BASE_SIGHT_RANGE + self.lamp_range  # current sight range
         self.is_lamp_on = True
-        self.visibility = 15  # how far the monster can see the player from
+        self.sight_range = self.BASE_SIGHT_RANGE
 
         # actions
         self.performing_action = False
         self.next_action = -1
         self.grabbed_entity = None
         self.is_moving_entity = False
+        self.is_sneaking = False
 
     def toggle_lamp(self, is_lamp_on=None):
         if is_lamp_on is None:
-            if self.is_lamp_on:
-                self.is_lamp_on = False
-            elif not is_lamp_on:
-                self.is_lamp_on = True
-        elif is_lamp_on:
-            self.is_lamp_on = True
+            self.is_lamp_on = not self.is_lamp_on
         else:
-            self.is_lamp_on = False
+            self.is_lamp_on = is_lamp_on
+        if self.is_lamp_on:
+            self.light.brightness = self.lamp_range
+        else:
+            self.light.brightness = 0
+
+    def toggle_sneak(self, is_sneaking=None):
+        if is_sneaking is None:
+            self.is_sneaking = not self.is_sneaking
+        else:
+            self.is_sneaking = is_sneaking
 
     def perform_action(self, x, y):
         self.performing_action = False
@@ -144,10 +162,12 @@ class Player(Entity):
                     self.stamina -= 10
                 else:
                     self.drop()
+            if self.is_sneaking:
+                self.stamina -= 5
             self.x += dx
             self.y += dy
-            has_moved = True
             self.stamina -= 5
+            has_moved = True
         return has_moved
 
     def update(self):
@@ -169,9 +189,7 @@ class Player(Entity):
             elif self.fuel <= 0:
                 self.lamp_range = 0
             self.visibility = 15
-            self.sight_range = self.BASE_SIGHT_RANGE + self.lamp_range
         else:
-            self.sight_range = self.BASE_SIGHT_RANGE
             if self.game.turn_based:
                 self.sanity -= 1
             else:
@@ -199,8 +217,9 @@ class Monster(Entity):
     class_char = '&'
     class_color = libtcod.red
 
-    def __init__(self, x, y, con, game, level, player):
-        Entity.__init__(self, x, y, self.class_char, self.class_color, True, con, game)
+    def __init__(self, x, y, level, player, fov_map, con, game):
+        Entity.__init__(self, x, y, self.class_char, self.class_color, True,
+                        Light(0, con, game), Noise(x, y, 0, con, game), fov_map, con, game)
         # spawning and timing
         self.is_spawned = False
         self.monster_timer = libtcod.random_get_int(0, 30, 100)
@@ -288,7 +307,8 @@ class Monster(Entity):
                     dy = y - self.y
                     self.move(dx, dy, self.level.tiles)
 
-    def draw(self, fov_map, top_left, bottom_right):
+    def draw(self, fov_map, top_left, bottom_right, tiles):
+        self.light.calculate_tile_brightness(tiles, self.x, self.y, top_left, bottom_right)
         if self.is_spawned and libtcod.map_is_in_fov(self.fov_map, self.x, self.y):
             # set the game to real time when the player sees the monster
             if self.game.turn_based:
@@ -327,8 +347,9 @@ class Door(Entity):
     open_char = "-"
     class_color = libtcod.light_gray
 
-    def __init__(self, x, y, con, entities, level, is_open=False):
-        Entity.__init__(self, x, y, self.closed_char, self.class_color, True, con, None)
+    def __init__(self, x, y, level, fov_map, con, game, is_open=False):
+        Entity.__init__(self, x, y, self.closed_char, self.class_color, True,
+                        Light(0, con, game), Noise(x, y, 0, con, None), fov_map, con, game)
 
         self.is_open = is_open
         self.strength = self.BASE_STRENGTH
@@ -360,8 +381,8 @@ class Fuel(Entity):
     class_char = "*"
     class_color = libtcod.amber
 
-    def __init__(self, x, y, con):
-        Entity.__init__(self, x, y, self.class_char, self.class_color, False, con, None)
+    def __init__(self, x, y, fov_map, con, game):
+        Entity.__init__(self, x, y, self.class_char, self.class_color, False, Light(0, con, game), Noise(x, y, 0, con, None), fov_map, con, game)
         self.amount = libtcod.random_get_int(0, 10, 30)
 
     def collect(self):
@@ -374,8 +395,9 @@ class Stairs(Entity):
     class_char = "s"
     class_color = libtcod.light_green
 
-    def __init__(self, x, y, con, game):
-        Entity.__init__(self, x, y, self.class_char, self.class_color, False, con, None)
+    def __init__(self, x, y, fov_map, con, game):
+        Entity.__init__(self, x, y, self.class_char, self.class_color, False,
+                        Light(0, con, game), Noise(x, y, 0, con, game), fov_map, con, game)
         self.game = game
 
     def descend(self):
@@ -387,8 +409,9 @@ class Closet(Entity):
     class_color = libtcod.azure
     BASE_STRENGTH = 5
 
-    def __init__(self, x, y, con):
-        Entity.__init__(self, x, y, self.class_char, libtcod.azure, True, con, None)
+    def __init__(self, x, y, fov_map, con, game):
+        Entity.__init__(self, x, y, self.class_char, libtcod.azure, True,
+                        Light(0, con, game), Noise(x, y, 0, con, game), fov_map, con, game)
         self.strength = self.BASE_STRENGTH
         self.is_destroyed = False
         self.destroyed_color = libtcod.darker_azure
@@ -404,8 +427,9 @@ class Closet(Entity):
         self.x += self.x - x
         self.y += self.y - y
 
-    def draw(self, fov_map, top_left, bottom_right):
-        if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+    def draw(self, fov_map, top_left, bottom_right, tiles):
+        self.light.calculate_tile_brightness(tiles, self.x, self.y, top_left, bottom_right)
+        if libtcod.map_is_in_fov(fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             if self.is_destroyed:
                 libtcod.console_set_default_foreground(self.con, self.destroyed_color)
@@ -422,3 +446,24 @@ class Closet(Entity):
         self.exit()
         self.blocks_movement = False
         self.color = self.destroyed_color
+
+
+class Torch(Entity):
+    class_char = 't'
+    lit_color = libtcod.orange
+    unlit_color = libtcod.dark_orange
+
+    def __init__(self, x, y, is_lit, brightness, fov_map, con, game):
+        if is_lit:
+            Entity.__init__(self, x, y, self.class_char, self.lit_color, True,
+                            Light(brightness, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+        else:
+            Entity.__init__(self, x, y, self.class_char, self.unlit_color, True,
+                            Light(brightness, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+        self.is_lit = is_lit
+
+    def toggle_lit(self, is_lit=None):
+        if is_lit is None:
+            self.is_lit = not self.is_lit
+        else:
+            self.is_lit = is_lit

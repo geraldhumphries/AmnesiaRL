@@ -1,5 +1,6 @@
 # !usr/bin/python
 
+import math
 from lib import libtcodpy as libtcod
 from src.entity import Door, Closet
 from src.entity import Fuel
@@ -11,7 +12,7 @@ class Level:
     ROOM_MIN_SIZE = 4
     MAX_ROOMS = 30
 
-    def __init__(self, width, height, con):
+    def __init__(self, width, height, con, game):
         self.width = width
         self.height = height
         self.con = con
@@ -74,16 +75,16 @@ class Level:
                 number_of_rooms += 1
                 self.rooms.append(new_room)
 
-        # add doors
-        for room in self.rooms:
-            self.add_doors(room, game.entities)
-            self.add_closets(room, game.entities)
-
-        self.add_items(game.entities)
-        self.add_stairs(game)
-
         # create fov map
         self.create_fov_maps()
+
+        # add doors
+        for room in self.rooms:
+            self.add_doors(room, game)
+            self.add_closets(room, game)
+
+        self.add_items(game)
+        self.add_stairs(game)
 
     def create_fov_maps(self):
         for y in range(self.height):
@@ -125,24 +126,24 @@ class Level:
                 self.tiles[x][end_y].is_walkable = True
                 self.tiles[x][end_y].is_transparent = True
 
-    def add_doors(self, room, entities):
+    def add_doors(self, room, game):
         for x in range(room.x1, room.x2):
             # top edge
             if self.tiles[x][room.y1].is_walkable and self.num_adjacent_floors(x, room.y1) <= 2:
-                entities.append(Door(x, room.y1, self.con, entities, self))
+                game.entities.append(Door(x, room.y1, self, self.fov_map, self.con, game))
 
             # bottom edge
             if self.tiles[x][room.y2].is_walkable and self.num_adjacent_floors(x, room.y2) <= 2:
-                entities.append(Door(x, room.y2, self.con, entities, self))
+                game.entities.append(Door(x, room.y2, self, self.fov_map, self.con, game))
 
         for y in range(room.y1, room.y2):
             # left edge
             if self.tiles[room.x1][y].is_walkable and self.num_adjacent_floors(room.x1, y) <= 2:
-                entities.append(Door(room.x1, y, self.con, entities, self))
+                game.entities.append(Door(room.x1, y, self, self.fov_map, self.con, game))
 
             # right edge
             if self.tiles[room.x2][y].is_walkable and self.num_adjacent_floors(room.x2, y) <= 2:
-                entities.append(Door(room.x2, y, self.con, entities, self))
+                game.entities.append(Door(room.x2, y, self, self.fov_map, self.con, game))
 
     def num_adjacent_floors(self, x, y):
         adjacent_floors = 0
@@ -157,26 +158,26 @@ class Level:
 
         return adjacent_floors
 
-    def add_closets(self, room, entities):
+    def add_closets(self, room, game):
         odds = 50  # 1 in [odds] chance that a closet will spawn for every tile adjacent to a wall in a room
         for x in range(room.x1, room.x2):
 
             # top edge
             if self.tiles[x][room.y1 + 1].is_walkable and self.will_spawn(odds):
-                entities.append(Closet(x, room.y1 + 1, self.con))
+                game.entities.append(Closet(x, room.y1 + 1, self.fov_map, self.con, game))
 
             # bottom edge
             if self.tiles[x][room.y2 - 1].is_walkable and self.will_spawn(odds):
-                entities.append(Closet(x, room.y2 - 1, self.con))
+                game.entities.append(Closet(x, room.y2 - 1, self.fov_map, self.con, game))
 
         for y in range(room.y1, room.y2):
             # left edge
             if self.tiles[room.x1 + 1][y].is_walkable and self.will_spawn(odds):
-                entities.append(Closet(room.x1 + 1, y, self.con))
+                game.entities.append(Closet(room.x1 + 1, y, self.fov_map, self.con, game))
 
             # right edge
             if self.tiles[room.x2 - 1][y].is_walkable and self.will_spawn(odds):
-                entities.append(Closet(room.x2 - 1, y, self.con))
+                game.entities.append(Closet(room.x2 - 1, y, self.fov_map, self.con, game))
 
     def add_stairs(self, game):
         added = False
@@ -184,19 +185,18 @@ class Level:
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
             y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
             if self.tiles[x][y].is_walkable:
-                game.entities.append(Stairs(x, y, self.con, game))
+                game.entities.append(Stairs(x, y, self.fov_map, self.con, game))
                 added = True
 
-    def add_items(self, entities):
+    def add_items(self, game):
         for i in range(50):
             x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
             y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
             if self.tiles[x][y].is_walkable:
-                entities.append(Fuel(x, y, self.con))
+                game.entities.append(Fuel(x, y, self.fov_map, self.con, game))
 
     def draw(self, player, screen_width, screen_height):
-        # compute the player's fov
-        self.compute_fov(self.fov_map, player)
+        player.compute_fov(player.sight_range)
         self.top_left = [round(player.x - (screen_width - 1) / 2) - 1, round(player.y - (screen_height - 1) / 2) - 1]
         self.bottom_right = [round(player.x + (screen_width - 1) / 2), round(player.y + (screen_height - 1) / 2)]
 
@@ -221,33 +221,28 @@ class Level:
         # draw the level on the console
         for y in range(self.top_left[1], self.bottom_right[1]):
             for x in range(self.top_left[0], self.bottom_right[0]):
-                if libtcod.map_is_in_fov(self.fov_map, x, y) or self.tiles[x][y].is_revealed:
+                if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness - self.tiles[x][y]\
+                        .distance_to(player.x, player.y) >= 0 or self.tiles[x][y].is_revealed:
                     self.tiles[x][y].is_revealed = True
                     if libtcod.map_is_in_fov(self.fov_map, x, y):
                         if not self.tiles[x][y].is_walkable:
-                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#', self.color_lit_wall, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
+                                                        self.color_lit_wall, libtcod.BKGND_SET)
                         else:
                             # floor
-                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.', self.color_lit_floor, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.',
+                                                        self.color_lit_floor, libtcod.BKGND_SET)
                     else:
                         if not self.tiles[x][y].is_walkable:
-                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#', self.color_unlit_wall, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
+                                                        self.color_unlit_wall, libtcod.BKGND_SET)
                         else:
                             # floor
-                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.', self.color_unlit_floor, libtcod.BKGND_SET)
+                            libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.',
+                                                        self.color_unlit_floor, libtcod.BKGND_SET)
                 x_draw += 1
             y_draw += 1
             x_draw = 0
-
-    @staticmethod
-    def compute_fov(fov_map, entity):
-        # compute fov of an entity
-        libtcod.map_compute_fov(fov_map,
-                                entity.x,
-                                entity.y,
-                                entity.sight_range,  # entity's default sight range plus light source
-                                True,
-                                libtcod.FOV_RESTRICTIVE)
 
     @staticmethod
     def will_spawn(odds):
@@ -277,16 +272,18 @@ class Room:
 
 
 class Tile:
-    # is_walkable means an entity can walk on the tile
-    # is_transparent means an entity can see through the tile
-    # revealed means the tile has been seen by the player
     def __init__(self, is_walkable, x, y, is_transparent=None, is_revealed=False):
         self.is_walkable = is_walkable
         self.x = x
         self.y = y
+        self.brightness = 0
 
         if is_transparent is None:
             is_transparent = is_walkable
         self.is_transparent = is_transparent
 
         self.is_revealed = is_revealed
+
+    def distance_to(self, x, y):
+        distance = math.fabs(self.x - x) + math.fabs(self.y - y)
+        return distance
