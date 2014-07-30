@@ -5,6 +5,7 @@ from lib import libtcodpy as libtcod
 from src.entity import Door, Closet
 from src.entity import Fuel
 from src.entity import Stairs
+from src.entity import Torch
 
 
 class Level:
@@ -75,9 +76,6 @@ class Level:
                 number_of_rooms += 1
                 self.rooms.append(new_room)
 
-        # create fov map
-        self.create_fov_maps()
-
         # add doors
         for room in self.rooms:
             self.add_doors(room, game)
@@ -85,6 +83,9 @@ class Level:
 
         self.add_items(game)
         self.add_stairs(game)
+
+        # create fov map
+        self.create_fov_maps()
 
     def create_fov_maps(self):
         for y in range(self.height):
@@ -195,6 +196,12 @@ class Level:
             if self.tiles[x][y].is_walkable:
                 game.entities.append(Fuel(x, y, self.fov_map, self.con, game))
 
+        for i in range(35):
+            x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
+            y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
+            if self.tiles[x][y].is_walkable:
+                game.entities.append(Torch(x, y, True, self.fov_map, self.con, game))
+
     def draw(self, player, screen_width, screen_height):
         player.compute_fov(player.sight_range)
         self.top_left = [round(player.x - (screen_width - 1) / 2) - 1, round(player.y - (screen_height - 1) / 2) - 1]
@@ -221,10 +228,9 @@ class Level:
         # draw the level on the console
         for y in range(self.top_left[1], self.bottom_right[1]):
             for x in range(self.top_left[0], self.bottom_right[0]):
-                if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness - self.tiles[x][y]\
-                        .distance_to(player.x, player.y) >= 0 or self.tiles[x][y].is_revealed:
+                if (libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0) or self.tiles[x][y].is_revealed:
                     self.tiles[x][y].is_revealed = True
-                    if libtcod.map_is_in_fov(self.fov_map, x, y):
+                    if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0:
                         if not self.tiles[x][y].is_walkable:
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
                                                         self.color_lit_wall, libtcod.BKGND_SET)
@@ -287,3 +293,9 @@ class Tile:
     def distance_to(self, x, y):
         distance = math.fabs(self.x - x) + math.fabs(self.y - y)
         return distance
+
+    @staticmethod
+    def clear_brightness(tiles):
+        for y in range(len(tiles[0])):
+            for x in range(len(tiles)):
+                tiles[x][y].brightness = 0

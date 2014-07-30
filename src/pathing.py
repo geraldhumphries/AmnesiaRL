@@ -24,21 +24,21 @@ class Noise:
 
 
 class Light:
-    def __init__(self, brightness, con, game):
+    def __init__(self, brightness, fov_map, con, game):
         self.brightness = brightness
         self.con = con
         self.game = game
         self.fov_map = libtcod.map_new(game.level.width, game.level.height)
 
-    def calculate_tile_brightness(self, tiles, x, y, top_left, bottom_right):
+    def calculate_tile_brightness(self, tiles, x, y, top_left, bottom_right, fov_map):
         if self.brightness > 0:
-            libtcod.map_compute_fov(self.fov_map, x, y, self.brightness, True, libtcod.FOV_SHADOW)
+            libtcod.map_compute_fov(fov_map, x, y, self.brightness, True, libtcod.FOV_SHADOW)
             for iy in range(top_left[1], bottom_right[1]):
                 for ix in range(top_left[0], bottom_right[0]):
-                    if libtcod.map_is_in_fov(self.fov_map, ix, iy):
-                        tiles[x][y].brightness = self.brightness - tiles[x][y].distance_to(x, y)
-
-
+                    if libtcod.map_is_in_fov(fov_map, ix, iy):
+                        tiles[ix][iy].brightness = self.brightness - tiles[ix][iy].distance_to(x, y)
+                        if tiles[ix][iy].brightness < 1:
+                            tiles[ix][iy].brightness = 1
 
 class Fov:
     def __init__(self, fov_map, entity, level, con, game):

@@ -3,6 +3,7 @@
 from lib import libtcodpy as libtcod
 from src import entity
 from src.level import Level
+from src.level import Tile
 
 # constants
 SCREEN_WIDTH = 59
@@ -96,6 +97,12 @@ class Pyhack:
         if self.player.health > 0 and self.player.sanity > 0:
             # renders the game components
             libtcod.console_clear(con)
+
+            Tile.clear_brightness(self.level.tiles)
+
+            for entity in reversed(self.entities):
+                entity.light.calculate_tile_brightness(self.level.tiles, entity.x, entity.y, self.level.top_left, self.level.bottom_right, self.level.fov_map)
+
             self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             for entity in reversed(self.entities):
@@ -113,9 +120,10 @@ class Pyhack:
             for entity in reversed(self.entities):
                 entity.clear()
 
-            self.handle_keys()
             self.player.update()
             self.monster.update()
+
+            self.handle_keys()
 
             return True
         else:
@@ -125,9 +133,9 @@ class Pyhack:
     def descend_floor(self):
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
-        self.monster = entity.Monster(25, 24, self.level, self.player, con, self)
-        self.entities = [self.player, self.monster]
         self.level.create_map(self.player, self)
+        self.monster = entity.Monster(25, 24, self.level, self.player, self.level.fov_map, con, self)
+        self.entities = [self.player, self.monster]
 
     def game_over(self):
         game_over_string = "GAME OVER"
