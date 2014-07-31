@@ -121,7 +121,7 @@ class Pyhack:
             for entity in reversed(self.entities):
                 entity.clear()
 
-            self.player.update()
+            self.player.update(self.level.tiles)
             self.monster.update(self.level.tiles)
 
             self.handle_keys()

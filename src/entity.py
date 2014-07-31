@@ -169,13 +169,13 @@ class Player(Entity):
             has_moved = True
         return has_moved
 
-    def update(self):
+    def update(self, tiles):
         # fuel
         if self.is_lamp_on and self.fuel >= 0:
             if self.game.turn_based:
                 self.fuel -= 0.2
             else:
-                self.fuel -= 0.01
+                self.fuel -= 0.03
 
             if 60 <= self.fuel <= 100:
                 self.lamp_range = 5
@@ -187,11 +187,21 @@ class Player(Entity):
                 self.lamp_range = 2
             elif self.fuel <= 0:
                 self.lamp_range = 0
+
+        # sanity
+        if tiles[self.x][self.y].brightness > 2:
+            if self.game.turn_based:
+                self.sanity += 0.2
+            else:
+                self.sanity += 0.02
         else:
             if self.game.turn_based:
-                self.sanity -= 1
+                self.sanity -= (3 - tiles[self.x][self.y].brightness) / 2
             else:
-                self.sanity -= 0.1
+                self.sanity -= (3 - tiles[self.x][self.y].brightness) / 7
+
+        if self.sanity > 100:
+            self.sanity = 100
 
         # stamina
         if self.game.turn_based:
