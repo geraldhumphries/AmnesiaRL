@@ -273,7 +273,7 @@ class Level:
 
     @staticmethod
     def will_spawn(odds):
-        return libtcod.random_get_int(0, 0, odds) == odds
+        return libtcod.random_get_int(0, 0, odds - 1) == odds - 1
 
 
 # helps make new rooms
