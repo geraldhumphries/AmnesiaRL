@@ -36,9 +36,9 @@ class Light:
             for iy in range(top_left[1], bottom_right[1]):
                 for ix in range(top_left[0], bottom_right[0]):
                     if libtcod.map_is_in_fov(fov_map, ix, iy):
-                        tiles[ix][iy].brightness = self.brightness - tiles[ix][iy].distance_to(x, y)
+                        tiles[ix][iy].brightness += self.brightness - tiles[ix][iy].distance_to(x, y)
                         if tiles[ix][iy].brightness < 1:
-                            tiles[ix][iy].brightness = 1
+                            tiles[ix][iy].brightness += 1
 
     @staticmethod
     def clear_brightness(tiles):

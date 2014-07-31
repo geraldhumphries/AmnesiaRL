@@ -187,19 +187,11 @@ class Player(Entity):
                 self.lamp_range = 2
             elif self.fuel <= 0:
                 self.lamp_range = 0
-            self.visibility = 15
         else:
             if self.game.turn_based:
                 self.sanity -= 1
             else:
                 self.sanity -= 0.1
-
-            if 60 <= self.sanity <= 100:
-                self.visibility = 1
-            elif 30 <= self.sanity < 60:
-                self.visibility = 2
-            elif 0 <= self.sanity < 30:
-                self.visibility = 3
 
         # stamina
         if self.game.turn_based:
@@ -263,16 +255,26 @@ class Monster(Entity):
         self.x = None
         self.y = None
 
-    def check_see_player(self):
+    def check_see_player(self, tiles):
         self.compute_monster_fov()
-        if (self.can_see_player and self.player.is_lamp_on) or \
-                libtcod.map_is_in_fov(self.fov_map, self.player.x, self.player.y):
+
+        if self.game.turn_based or libtcod.map_is_in_fov(self.fov_map, self.player.x, self.player.y) \
+                and tiles[self.player.x][self.player.y].brightness > 1:
+            self.can_see_player = True
+        else:
+            self.can_see_player = False
+
+        if self.can_see_player:
             self.move_speed = 5
             libtcod.path_compute(self.path, self.x, self.y, self.player.x, self.player.y)
-            self.can_see_player = True
-        elif libtcod.path_is_empty(self.path):
+        else:
+            self.move_speed = 8
+
+        if libtcod.path_is_empty(self.path):
             self.move_speed = 8
             self.can_see_player = False
+
+        print(self.can_see_player)
 
         return self.can_see_player
 
@@ -281,7 +283,7 @@ class Monster(Entity):
         libtcod.map_compute_fov(self.fov_map,
                                 self.x,
                                 self.y,
-                                self.player.visibility + self.game.floor,
+                                25,
                                 True,
                                 libtcod.FOV_RESTRICTIVE)
 
@@ -315,11 +317,11 @@ class Monster(Entity):
             libtcod.console_set_default_foreground(self.con, self.color)
             libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
-    def update(self):
+    def update(self, tiles):
         self.move_index += 1
         self.monster_index += 1
 
-        if self.is_spawned and not self.check_see_player() and \
+        if self.is_spawned and not self.check_see_player(tiles) and \
                 self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
             self.despawn()
             self.monster_index = 0

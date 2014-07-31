@@ -110,10 +110,10 @@ class Pyhack:
                 entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
 
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Lantern fuel: " + str(int(self.player.fuel)) + "  ")
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "Sanity: " + str(int(self.player.sanity)) + "  ")
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Health: " + str(int(self.player.health)) + "  ")
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Stamina: " + str(int(self.player.stamina)) + "  ")
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Fue: " + str(int(self.player.fuel)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "San: " + str(int(self.player.sanity)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Hea: " + str(int(self.player.health)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Sta: " + str(int(self.player.stamina)))
 
             libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
@@ -122,7 +122,7 @@ class Pyhack:
                 entity.clear()
 
             self.player.update()
-            self.monster.update()
+            self.monster.update(self.level.tiles)
 
             self.handle_keys()
 
