@@ -453,10 +453,10 @@ class Torch(Entity):
     def __init__(self, x, y, is_lit, fov_map, con, game):
         if is_lit:
             Entity.__init__(self, x, y, self.class_char, self.lit_color, False,
-                            Light(3, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+                            Light(libtcod.random_get_int(0, 2, 4), fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
         else:
             Entity.__init__(self, x, y, self.class_char, self.unlit_color, False,
-                            Light(0, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+                            Light(libtcod.random_get_int(0, 2, 4), fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
         self.is_lit = is_lit
 
     def toggle_lit(self, is_lit=None):

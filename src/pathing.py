@@ -40,6 +40,13 @@ class Light:
                         if tiles[ix][iy].brightness < 1:
                             tiles[ix][iy].brightness = 1
 
+    @staticmethod
+    def clear_brightness(tiles):
+        for y in range(len(tiles[0])):
+            for x in range(len(tiles)):
+                tiles[x][y].brightness = 0
+
+
 class Fov:
     def __init__(self, fov_map, entity, level, con, game):
         self.con = con

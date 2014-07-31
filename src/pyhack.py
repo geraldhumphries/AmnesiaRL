@@ -4,6 +4,7 @@ from lib import libtcodpy as libtcod
 from src import entity
 from src.level import Level
 from src.level import Tile
+from src.pathing import Light
 
 # constants
 SCREEN_WIDTH = 59
@@ -98,7 +99,7 @@ class Pyhack:
             # renders the game components
             libtcod.console_clear(con)
 
-            Tile.clear_brightness(self.level.tiles)
+            Light.clear_brightness(self.level.tiles)
 
             for entity in reversed(self.entities):
                 entity.light.calculate_tile_brightness(self.level.tiles, entity.x, entity.y, self.level.top_left, self.level.bottom_right, self.level.fov_map)
@@ -133,9 +134,9 @@ class Pyhack:
     def descend_floor(self):
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
-        self.level.create_map(self.player, self)
         self.monster = entity.Monster(25, 24, self.level, self.player, self.level.fov_map, con, self)
         self.entities = [self.player, self.monster]
+        self.level.create_map(self.player, self)
 
     def game_over(self):
         game_over_string = "GAME OVER"
@@ -168,6 +169,7 @@ class Pyhack:
 def main():
     # initializes the Pyhack object
     game = Pyhack()
+    game.level.draw(game.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
     # constantly renders while the program window is still open
     while not libtcod.console_is_window_closed():

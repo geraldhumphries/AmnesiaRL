@@ -79,7 +79,7 @@ class Level:
         # add doors
         for room in self.rooms:
             self.add_doors(room, game)
-            self.add_closets(room, game)
+            self.add_room_entities(room, game)
 
         self.add_items(game)
         self.add_stairs(game)
@@ -146,6 +146,57 @@ class Level:
             if self.tiles[room.x2][y].is_walkable and self.num_adjacent_floors(room.x2, y) <= 2:
                 game.entities.append(Door(room.x2, y, self, self.fov_map, self.con, game))
 
+    def add_room_entities(self, room, game):
+        # CLOSETS #
+        odds = 50  # 1 in [odds] chance that an entity will spawn for every tile adjacent to a wall in a room
+        for x in range(room.x1, room.x2):
+            # top edge
+            if self.tiles[x][room.y1 + 1].is_walkable and self.num_adjacent_walls(x, room.y1 + 1) > 0 \
+                    and self.will_spawn(odds):
+                game.entities.append(Closet(x, room.y1 + 1, self.fov_map, self.con, game))
+
+            # bottom edge
+            if self.tiles[x][room.y2 - 1].is_walkable and self.num_adjacent_walls(x, room.y2 - 1) > 0 \
+                    and self.will_spawn(odds):
+                game.entities.append(Closet(x, room.y2 - 1, self.fov_map, self.con, game))
+
+        for y in range(room.y1, room.y2):
+            # left edge
+            if self.tiles[room.x1 + 1][y].is_walkable and self.num_adjacent_walls(room.x1 + 1, y) > 0 \
+                    and self.will_spawn(odds):
+                game.entities.append(Closet(room.x1 + 1, y, self.fov_map, self.con, game))
+
+            # right edge
+            if self.tiles[room.x2 - 1][y].is_walkable and self.num_adjacent_walls(room.x2 - 1, y) > 0 \
+                    and self.will_spawn(odds):
+                game.entities.append(Closet(room.x2 - 1, y, self.fov_map, self.con, game))
+
+    def add_stairs(self, game):
+        added = False
+        while not added:
+            x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
+            y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
+            if self.tiles[x][y].is_walkable:
+                game.entities.append(Stairs(x, y, self.fov_map, self.con, game))
+                added = True
+
+    def add_items(self, game):
+        for i in range(30):
+            while True:
+                x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
+                y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
+                if self.tiles[x][y].is_walkable and self.num_adjacent_walls(x, y) > 0:
+                    game.entities.append(Torch(x, y, True, self.fov_map, self.con, game))
+                    break
+
+        for i in range(20):
+            while True:
+                x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
+                y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
+                if self.tiles[x][y].is_walkable:
+                    game.entities.append(Fuel(x, y, self.fov_map, self.con, game))
+                    break
+
     def num_adjacent_floors(self, x, y):
         adjacent_floors = 0
         if self.tiles[x + 1][y].is_walkable:
@@ -159,48 +210,18 @@ class Level:
 
         return adjacent_floors
 
-    def add_closets(self, room, game):
-        odds = 50  # 1 in [odds] chance that a closet will spawn for every tile adjacent to a wall in a room
-        for x in range(room.x1, room.x2):
+    def num_adjacent_walls(self, x, y):
+        adjacent_walls = 0
+        if not self.tiles[x + 1][y].is_walkable:
+            adjacent_walls += 1
+        if not self.tiles[x][y + 1].is_walkable:
+            adjacent_walls += 1
+        if not self.tiles[x - 1][y].is_walkable:
+            adjacent_walls += 1
+        if not self.tiles[x][y - 1].is_walkable:
+            adjacent_walls += 1
 
-            # top edge
-            if self.tiles[x][room.y1 + 1].is_walkable and self.will_spawn(odds):
-                game.entities.append(Closet(x, room.y1 + 1, self.fov_map, self.con, game))
-
-            # bottom edge
-            if self.tiles[x][room.y2 - 1].is_walkable and self.will_spawn(odds):
-                game.entities.append(Closet(x, room.y2 - 1, self.fov_map, self.con, game))
-
-        for y in range(room.y1, room.y2):
-            # left edge
-            if self.tiles[room.x1 + 1][y].is_walkable and self.will_spawn(odds):
-                game.entities.append(Closet(room.x1 + 1, y, self.fov_map, self.con, game))
-
-            # right edge
-            if self.tiles[room.x2 - 1][y].is_walkable and self.will_spawn(odds):
-                game.entities.append(Closet(room.x2 - 1, y, self.fov_map, self.con, game))
-
-    def add_stairs(self, game):
-        added = False
-        while not added:
-            x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
-            y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
-            if self.tiles[x][y].is_walkable:
-                game.entities.append(Stairs(x, y, self.fov_map, self.con, game))
-                added = True
-
-    def add_items(self, game):
-        for i in range(50):
-            x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
-            y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
-            if self.tiles[x][y].is_walkable:
-                game.entities.append(Fuel(x, y, self.fov_map, self.con, game))
-
-        for i in range(35):
-            x = libtcod.random_get_int(0, 0, len(self.tiles) - 1)
-            y = libtcod.random_get_int(0, 0, len(self.tiles[0]) - 1)
-            if self.tiles[x][y].is_walkable:
-                game.entities.append(Torch(x, y, True, self.fov_map, self.con, game))
+        return adjacent_walls
 
     def draw(self, player, screen_width, screen_height):
         player.compute_fov(player.sight_range)
@@ -293,9 +314,3 @@ class Tile:
     def distance_to(self, x, y):
         distance = math.fabs(self.x - x) + math.fabs(self.y - y)
         return distance
-
-    @staticmethod
-    def clear_brightness(tiles):
-        for y in range(len(tiles[0])):
-            for x in range(len(tiles)):
-                tiles[x][y].brightness = 0
