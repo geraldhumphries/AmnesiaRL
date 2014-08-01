@@ -104,7 +104,7 @@ class Player(Entity):
         else:
             self.is_lamp_on = is_lamp_on
         if self.is_lamp_on:
-            self.light.brightness = self.lamp_range
+            self.light.brightness = 1 + self.lamp_range
         else:
             self.light.brightness = 1
 
@@ -177,16 +177,19 @@ class Player(Entity):
             else:
                 self.fuel -= 0.03
 
-            if 60 <= self.fuel <= 100:
+            if 60 < self.fuel <= 100:
                 self.lamp_range = 5
-            elif 40 <= self.fuel < 60:
+            elif 40 < self.fuel <= 60:
                 self.lamp_range = 4
-            elif 20 <= self.fuel < 40:
+            elif 20 < self.fuel <= 40:
                 self.lamp_range = 3
-            elif 0 <= self.fuel < 20:
+            elif 0 < self.fuel <= 20:
                 self.lamp_range = 2
-            elif self.fuel <= 0:
+            else:
                 self.lamp_range = 0
+                self.is_lamp_on = False
+
+            self.light.brightness = 1 + self.lamp_range
 
         # sanity
         if tiles[self.x][self.y].brightness > 2:
@@ -198,7 +201,7 @@ class Player(Entity):
             if self.game.turn_based:
                 self.sanity -= (3 - tiles[self.x][self.y].brightness) / 2
             else:
-                self.sanity -= (3 - tiles[self.x][self.y].brightness) / 7
+                self.sanity -= (3 - tiles[self.x][self.y].brightness) / 15
 
         if self.sanity > 100:
             self.sanity = 100
