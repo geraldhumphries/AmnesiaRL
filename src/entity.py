@@ -34,6 +34,9 @@ class Entity:
     def grab(self):
         return
 
+    def collect(self, player):
+        return
+
     def check_is_walkable(self, x, y):
         for entity in self.game.entities:
             if entity.x == x and entity.y == y:
@@ -72,7 +75,7 @@ class NextAction:
     open = 0  # open a door
     close = 1  # close a door
     enter = 3  # enter a closet
-    pick_up = 2  # pick up an item
+    collect = 2  # pick up an item
     descend = 4  # descend a floor
     grab = 5  # grab an entity
     generic = 6  # perform an entity's default action
@@ -132,6 +135,11 @@ class Player(Entity):
             for entity in self.game.entities:
                 if self.x + x == entity.x and self.y + y == entity.y:
                     self.grab_entity(entity)
+                    return
+        elif self.next_action == NextAction.collect:
+            for entity in self.game.entities:
+                if self.x + x == entity.x and self.y + y == entity.y:
+                    entity.collect(self)
                     return
 
     def grab_entity(self, entity):
@@ -394,10 +402,10 @@ class Fuel(Entity):
         Entity.__init__(self, x, y, self.class_char, self.class_color, False, Light(0, fov_map, con, game), Noise(x, y, 0, con, None), fov_map, con, game)
         self.amount = libtcod.random_get_int(0, 10, 30)
 
-    def action(self):
+    def collect(self, player):
         self.x = None
         self.y = None
-        return self.amount
+        player.fuel += self.amount
 
 
 class Stairs(Entity):

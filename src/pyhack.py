@@ -66,6 +66,10 @@ class Pyhack:
             elif key.c == ord('g'):
                 self.player.performing_action = True
                 self.player.next_action = entity.NextAction.grab
+
+            elif key.c == ord('c'):
+                self.player.performing_action = True
+                self.player.next_action = entity.NextAction.collect
         else:
             if key.vk == libtcod.KEY_LEFT:
                 self.player.perform_action(-1, 0)
