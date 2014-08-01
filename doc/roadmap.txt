@@ -1,0 +1,31 @@
+Roadmap:
+    Doors
+	    Objects can be moved in front of the door to increase door health
+	    Fix bug with door spawning when a hallway corners adjacent to a room
+    Health and sanity
+	    Health and sanity recovery with progress or healing items
+    Objectives and Floors
+	    Objective ideas
+		    Item that needs to be found
+		    Puzzle that needs to be done (maybe involving that item?)
+    Light
+	    Multiple colours
+	    Low light intensities are less visible the farther away you are
+	    Tile brightness should depend on light intensity
+	Sound:
+
+    Stealth mechanics
+	    Movement and actions will cause noise
+	    Light intensity, noise, and sanity all factors in visibility
+	    Objects to hide in, will lower visibility but take extra actions to move out of and decrease visibility
+	    A dialog that tells you when you are being chased and when the monster is searching for you
+    Monster
+	    Path directly to the player on spawn until game switches to real time
+	    Attempt to locate the player based on sound and light
+    Game
+	    Pausing
+	    Saving and loading
+	    Delete save file on death
+	    Keep track of high scores
+    Code
+	    Refactor to decrease coupling

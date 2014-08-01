@@ -1,10 +1,8 @@
 pyhack
 ======
-Pyhack is a roguelike version of Amnesia: The Dark Descent. First ever python project, excuse the spaghetti code.
+Pyhack is a roguelike version of Amnesia: The Dark Descent
 
-`O` to open doors  
-`P` to close them  
-`I` to drag a closet   
-`U` to release it   
-`D` to descend stairs   
-`C` to pick up items   
+Arrow keys to move
+`a` to perform an action on an entity
+`g` to grab and drag an entity
+`l` to toggle the lantern

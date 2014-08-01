@@ -28,6 +28,12 @@ class Entity:
             has_moved = True
         return has_moved
 
+    def action(self):
+        return
+
+    def grab(self):
+        return
+
     def check_is_walkable(self, x, y):
         for entity in self.game.entities:
             if entity.x == x and entity.y == y:
@@ -69,6 +75,7 @@ class NextAction:
     pick_up = 2  # pick up an item
     descend = 4  # descend a floor
     grab = 5  # grab an entity
+    generic = 6  # perform an entity's default action
 
 
 class Player(Entity):
@@ -116,35 +123,21 @@ class Player(Entity):
 
     def perform_action(self, x, y):
         self.performing_action = False
-        if self.next_action == NextAction.open:
+        if self.next_action == NextAction.generic:
             for entity in self.game.entities:
-                if entity.char == Door.closed_char and self.x + x == entity.x and self.y + y == entity.y:
-                    entity.open()
-                    return
-        elif self.next_action == NextAction.close:
-            for entity in self.game.entities:
-                if entity.char == Door.open_char and self.x + x == entity.x and self.y + y == entity.y:
-                    entity.close()
-                    return
-        elif self.next_action == NextAction.pick_up:
-            for entity in self.game.entities:
-                if entity.char == Fuel.class_char and self.x + x == entity.x and self.y + y == entity.y:
-                    self.fuel += entity.collect()
-                    return
-        elif self.next_action == NextAction.descend:
-            for entity in self.game.entities:
-                if entity.char == Stairs.class_char and self.x + x == entity.x and self.y + y == entity.y:
-                    entity.descend()
+                if self.x + x == entity.x and self.y + y == entity.y:
+                    entity.action()
                     return
         elif self.next_action == NextAction.grab:
             for entity in self.game.entities:
-                if entity.char == Closet.class_char and self.x + x == entity.x and self.y + y == entity.y:
-                    self.grab(entity)
+                if self.x + x == entity.x and self.y + y == entity.y:
+                    self.grab_entity(entity)
                     return
 
-    def grab(self, entity):
-        self.grabbed_entity = entity
-        self.is_moving_entity = True
+    def grab_entity(self, entity):
+        if entity.grab():
+            self.grabbed_entity = entity
+            self.is_moving_entity = True
 
     def drop(self):
         self.grabbed_entity = None
@@ -287,8 +280,6 @@ class Monster(Entity):
             self.move_speed = 8
             self.can_see_player = False
 
-        print(self.can_see_player)
-
         return self.can_see_player
 
     def compute_monster_fov(self):
@@ -369,12 +360,18 @@ class Door(Entity):
         self.level = level
         self.level.tiles[x][y].is_transparent = False
 
+    def action(self):
+        if self.is_open:
+            self.close()
+        else:
+            self.open()
+        self.level.create_fov_maps()
+
     def open(self):
         self.is_open = True
         self.blocks_movement = False
         self.char = self.open_char
         self.level.tiles[self.x][self.y].is_transparent = True
-        self.level.create_fov_maps()
 
     def close(self):
         self.is_open = False
@@ -382,7 +379,6 @@ class Door(Entity):
         self.char = self.closed_char
         self.strength = self.BASE_STRENGTH
         self.level.tiles[self.x][self.y].is_transparent = False
-        self.level.create_fov_maps()
 
     def bash(self):
         self.strength -= 1
@@ -398,7 +394,7 @@ class Fuel(Entity):
         Entity.__init__(self, x, y, self.class_char, self.class_color, False, Light(0, fov_map, con, game), Noise(x, y, 0, con, None), fov_map, con, game)
         self.amount = libtcod.random_get_int(0, 10, 30)
 
-    def collect(self):
+    def action(self):
         self.x = None
         self.y = None
         return self.amount
@@ -413,7 +409,7 @@ class Stairs(Entity):
                         Light(0, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, game)
         self.game = game
 
-    def descend(self):
+    def action(self):
         self.game.descend_floor()
 
 
@@ -430,24 +426,14 @@ class Closet(Entity):
         self.destroyed_color = libtcod.darker_azure
         self.hiding_color = libtcod.light_azure
 
-    def enter(self):
-        self.color = self.hiding_color
+    def action(self):
+        return
+
+    def grab(self):
+        return True
 
     def exit(self):
         self.color = self.class_color
-
-    def grab(self, x, y):
-        self.x += self.x - x
-        self.y += self.y - y
-
-    def draw(self, fov_map, top_left, bottom_right, tiles):
-        if libtcod.map_is_in_fov(fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
-            screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
-            if self.is_destroyed:
-                libtcod.console_set_default_foreground(self.con, self.destroyed_color)
-            else:
-                libtcod.console_set_default_foreground(self.con, self.color)
-            libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
     def bash(self):
         self.strength -= 1
@@ -456,6 +442,7 @@ class Closet(Entity):
 
     def destroy(self):
         self.exit()
+        self.char = self.class_char
         self.blocks_movement = False
         self.color = self.destroyed_color
 
@@ -463,23 +450,24 @@ class Closet(Entity):
 class Torch(Entity):
     class_char = 't'
     lit_color = libtcod.orange
-    unlit_color = libtcod.dark_orange
+    unlit_color = libtcod.darker_orange
 
     def __init__(self, x, y, is_lit, fov_map, con, game):
+        self.lit_brightness = libtcod.random_get_int(0, 2, 4)
         if is_lit:
             Entity.__init__(self, x, y, self.class_char, self.lit_color, False,
-                            Light(libtcod.random_get_int(0, 2, 4), fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+                            Light(self.lit_brightness, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
         else:
             Entity.__init__(self, x, y, self.class_char, self.unlit_color, False,
-                            Light(libtcod.random_get_int(0, 2, 4), fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
+                            Light(self.lit_brightness, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
         self.is_lit = is_lit
 
-    def toggle_lit(self, is_lit=None):
-        if is_lit is None:
-            self.is_lit = not self.is_lit
-        else:
-            self.is_lit = is_lit
+    def action(self):
         if self.is_lit:
-            self.light.brightness = 5
-        else:
+            self.is_lit = False
+            self.color = self.unlit_color
             self.light.brightness = 0
+        else:
+            self.is_lit = True
+            self.color = self.lit_color
+            self.light.brightness = self.lit_brightness

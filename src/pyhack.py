@@ -59,28 +59,13 @@ class Pyhack:
             elif key.c == ord('l'):
                 self.player.toggle_lamp()
 
-            elif key.c == ord('o'):
+            elif key.c == ord('a'):
                 self.player.performing_action = True
-                self.player.next_action = entity.NextAction.open
+                self.player.next_action = entity.NextAction.generic
 
-            elif key.c == ord('p'):
-                self.player.performing_action = True
-                self.player.next_action = entity.NextAction.close
-
-            elif key.c == ord('c'):
-                self.player.performing_action = True
-                self.player.next_action = entity.NextAction.pick_up
-
-            elif key.c == ord('d'):
-                self.player.performing_action = True
-                self.player.next_action = entity.NextAction.descend
-
-            elif key.c == ord('i'):
+            elif key.c == ord('g'):
                 self.player.performing_action = True
                 self.player.next_action = entity.NextAction.grab
-
-            elif key.c == ord('u'):
-                self.player.drop()
         else:
             if key.vk == libtcod.KEY_LEFT:
                 self.player.perform_action(-1, 0)
@@ -121,8 +106,9 @@ class Pyhack:
             for entity in reversed(self.entities):
                 entity.clear()
 
-            self.player.update(self.level.tiles)
-            self.monster.update(self.level.tiles)
+            if not self.player.performing_action:
+                self.player.update(self.level.tiles)
+                self.monster.update(self.level.tiles)
 
             self.handle_keys()
 
