@@ -324,7 +324,7 @@ class Monster(Entity):
                     self.move(dx, dy, self.level.tiles)
 
     def draw(self, fov_map, top_left, bottom_right, tiles):
-        if self.is_spawned: # and libtcod.map_is_in_fov(self.fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
+        if self.is_spawned and libtcod.map_is_in_fov(self.fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
             # set the game to real time when the player sees the monster
             if self.game.turn_based:
                 self.game.turn_based = False
