@@ -90,14 +90,13 @@ class Pyhack:
 
             Light.clear_brightness(self.level.tiles)
 
-            for entity in reversed(self.entities):
-                entity.light.calculate_tile_brightness(self.level.tiles, entity.x, entity.y, self.level.top_left, self.level.bottom_right, self.level.fov_map)
+            for e in reversed(self.entities):
+                e.light.calculate_tile_brightness(self.level.tiles, e.x, e.y, self.level.top_left, self.level.bottom_right, self.level.fov_map)
 
             self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-            for entity in reversed(self.entities):
-                entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
-
+            for e in reversed(self.entities):
+                e.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
 
             libtcod.console_set_default_foreground(con, libtcod.white)
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
@@ -109,8 +108,8 @@ class Pyhack:
             libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
 
-            for entity in reversed(self.entities):
-                entity.clear()
+            for e in reversed(self.entities):
+                e.clear()
 
             if not self.player.performing_action or not self.turn_based:
                 self.player.update(self.level.tiles)
