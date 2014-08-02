@@ -276,7 +276,7 @@ class Monster(Entity):
         self.compute_monster_fov()
 
         if self.game.turn_based or libtcod.map_is_in_fov(self.fov_map, self.player.x, self.player.y) \
-                and tiles[self.player.x][self.player.y].brightness > 2:
+                and tiles[self.player.x][self.player.y].brightness > 3:
             self.can_see_player = True
         else:
             self.can_see_player = False
