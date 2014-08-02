@@ -98,6 +98,10 @@ class Pyhack:
             for e in reversed(self.entities):
                 e.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
 
+            if not self.player.performing_action or not self.turn_based:
+                self.player.update(self.level.tiles)
+                self.monster.update(self.level.tiles)
+
             libtcod.console_set_default_foreground(con, libtcod.white)
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Fue: " + str(int(self.player.fuel)))
@@ -110,10 +114,6 @@ class Pyhack:
 
             for e in reversed(self.entities):
                 e.clear()
-
-            if not self.player.performing_action or not self.turn_based:
-                self.player.update(self.level.tiles)
-                self.monster.update(self.level.tiles)
 
             self.handle_keys()
 
