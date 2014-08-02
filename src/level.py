@@ -256,13 +256,13 @@ class Level:
                     if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0:
                         if not self.tiles[x][y].is_walkable:
                             color = Light.calculate_tile_color(self.tiles[x][y].brightness,
-                                                               libtcod.black, self.color_lit_wall)
+                                                               libtcod.darkest_grey, self.color_lit_wall)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
                                                         color, libtcod.BKGND_SET)
                         else:
                             # floor
                             color = Light.calculate_tile_color(self.tiles[x][y].brightness,
-                                                               libtcod.black, self.color_lit_floor)
+                                                               libtcod.darkest_grey, self.color_lit_floor)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.',
                                                         color, libtcod.BKGND_SET)
                     else:
