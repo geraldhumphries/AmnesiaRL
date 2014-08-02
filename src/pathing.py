@@ -38,13 +38,20 @@ class Light:
                     if libtcod.map_is_in_fov(fov_map, ix, iy):
                         tiles[ix][iy].brightness += self.brightness - tiles[ix][iy].distance_to(x, y)
                         if tiles[ix][iy].brightness < 1:
-                            tiles[ix][iy].brightness += 1
+                            tiles[ix][iy].brightness = 1
 
     @staticmethod
     def clear_brightness(tiles):
         for y in range(len(tiles[0])):
             for x in range(len(tiles)):
                 tiles[x][y].brightness = 0
+
+    @staticmethod
+    def calculate_tile_color(brightness, c1, c2):
+        coef = brightness / 10
+        if coef > 1:
+            coef = 1
+        return libtcod.color_lerp(c1, c2, coef)
 
 
 class Fov:

@@ -6,6 +6,7 @@ from src.entity import Door, Closet
 from src.entity import Fuel
 from src.entity import Stairs
 from src.entity import Torch
+from src.pathing import Light
 
 
 class Level:
@@ -21,8 +22,8 @@ class Level:
         # tile colors
         self.color_lit_floor = libtcod.Color(100, 100, 100)
         self.color_lit_wall = libtcod.Color(255, 255, 255)
-        self.color_unlit_floor = libtcod.Color(50, 50, 50)
-        self.color_unlit_wall = libtcod.Color(50, 50, 50)
+        self.color_unlit_floor = libtcod.Color(25, 25, 25)
+        self.color_unlit_wall = libtcod.Color(25, 25, 25)
 
         # fov map object
         self.fov_map = libtcod.map_new(self.width, self.height)
@@ -249,16 +250,21 @@ class Level:
         # draw the level on the console
         for y in range(self.top_left[1], self.bottom_right[1]):
             for x in range(self.top_left[0], self.bottom_right[0]):
-                if (libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0) or self.tiles[x][y].is_revealed:
+                if (libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0) \
+                        or self.tiles[x][y].is_revealed:
                     self.tiles[x][y].is_revealed = True
                     if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0:
                         if not self.tiles[x][y].is_walkable:
+                            color = Light.calculate_tile_color(self.tiles[x][y].brightness,
+                                                               libtcod.black, self.color_lit_wall)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
-                                                        self.color_lit_wall, libtcod.BKGND_SET)
+                                                        color, libtcod.BKGND_SET)
                         else:
                             # floor
+                            color = Light.calculate_tile_color(self.tiles[x][y].brightness,
+                                                               libtcod.black, self.color_lit_floor)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.',
-                                                        self.color_lit_floor, libtcod.BKGND_SET)
+                                                        color, libtcod.BKGND_SET)
                     else:
                         if not self.tiles[x][y].is_walkable:
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',

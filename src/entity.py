@@ -45,8 +45,10 @@ class Entity:
 
     def draw(self, fov_map, top_left, bottom_right, tiles):
         if libtcod.map_is_in_fov(fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
+            color = Light.calculate_tile_color(tiles[self.x][self.y].brightness,
+                                               libtcod.black, self.color)
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
-            libtcod.console_set_default_foreground(self.con, self.color)
+            libtcod.console_set_default_foreground(self.con, color)
             libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
 
     def compute_fov(self, sight_range):
@@ -88,7 +90,7 @@ class Player(Entity):
 
     def __init__(self, x, y, fov_map, con, game):
         Entity.__init__(self, x, y, self.class_char, self.class_color, True,
-                        Light(5, fov_map, con, game), Noise(x, y, 1, con, game), fov_map, con, game)
+                        Light(10, fov_map, con, game), Noise(x, y, 1, con, game), fov_map, con, game)
 
         # player stats
         self.sanity = 100.0  # sanity in %
@@ -97,7 +99,7 @@ class Player(Entity):
         self.fuel = 50.0  # oil lamp fuel in %
 
         # lamp and sight
-        self.lamp_range = 5  # oil lamp range, decreases as fuel gets low
+        self.lamp_range = 10  # oil lamp range, decreases as fuel gets low
         self.is_lamp_on = True
         self.sight_range = self.BASE_SIGHT_RANGE
 
@@ -179,18 +181,18 @@ class Player(Entity):
                 self.fuel -= 0.03
 
             if 60 < self.fuel <= 100:
-                self.lamp_range = 5
+                self.lamp_range = 10
             elif 40 < self.fuel <= 60:
-                self.lamp_range = 4
+                self.lamp_range = 8
             elif 20 < self.fuel <= 40:
-                self.lamp_range = 3
+                self.lamp_range = 6
             elif 0 < self.fuel <= 20:
-                self.lamp_range = 2
+                self.lamp_range = 4
             else:
                 self.lamp_range = 0
                 self.is_lamp_on = False
 
-            self.light.brightness = 1 + self.lamp_range
+            self.light.brightness = 2 + self.lamp_range
 
         # sanity
         if tiles[self.x][self.y].brightness > 2:
@@ -265,6 +267,7 @@ class Monster(Entity):
             libtcod.path_compute(self.path, self.x, self.y, player.x, player.y)
 
     def despawn(self):
+        self.game.turn_based = True
         self.is_spawned = False
         self.x = None
         self.y = None
@@ -273,7 +276,7 @@ class Monster(Entity):
         self.compute_monster_fov()
 
         if self.game.turn_based or libtcod.map_is_in_fov(self.fov_map, self.player.x, self.player.y) \
-                and tiles[self.player.x][self.player.y].brightness > 1:
+                and tiles[self.player.x][self.player.y].brightness > 2:
             self.can_see_player = True
         else:
             self.can_see_player = False
@@ -321,7 +324,7 @@ class Monster(Entity):
                     self.move(dx, dy, self.level.tiles)
 
     def draw(self, fov_map, top_left, bottom_right, tiles):
-        if self.is_spawned and libtcod.map_is_in_fov(self.fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
+        if self.is_spawned: # and libtcod.map_is_in_fov(self.fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
             # set the game to real time when the player sees the monster
             if self.game.turn_based:
                 self.game.turn_based = False
@@ -406,6 +409,8 @@ class Fuel(Entity):
         self.x = None
         self.y = None
         player.fuel += self.amount
+        if player.fuel > 100:
+            player.fuel = 100
 
 
 class Stairs(Entity):
@@ -461,7 +466,7 @@ class Torch(Entity):
     unlit_color = libtcod.darker_orange
 
     def __init__(self, x, y, is_lit, fov_map, con, game):
-        self.lit_brightness = libtcod.random_get_int(0, 2, 4)
+        self.lit_brightness = libtcod.random_get_int(0, 4, 8)
         if is_lit:
             Entity.__init__(self, x, y, self.class_char, self.lit_color, False,
                             Light(self.lit_brightness, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, None)
