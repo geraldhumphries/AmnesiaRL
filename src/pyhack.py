@@ -98,6 +98,8 @@ class Pyhack:
             for entity in reversed(self.entities):
                 entity.draw(self.level.fov_map, self.level.top_left, self.level.bottom_right, self.level.tiles)
 
+
+            libtcod.console_set_default_foreground(con, libtcod.white)
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Fue: " + str(int(self.player.fuel)))
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "San: " + str(int(self.player.sanity)))
@@ -110,7 +112,7 @@ class Pyhack:
             for entity in reversed(self.entities):
                 entity.clear()
 
-            if not self.player.performing_action:
+            if not self.player.performing_action or not self.turn_based:
                 self.player.update(self.level.tiles)
                 self.monster.update(self.level.tiles)
 
