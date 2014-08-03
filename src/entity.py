@@ -90,7 +90,7 @@ class Player(Entity):
 
     def __init__(self, x, y, fov_map, con, game):
         Entity.__init__(self, x, y, self.class_char, self.class_color, True,
-                        Light(10, fov_map, con, game), Noise(x, y, 1, con, game), fov_map, con, game)
+                        Light(10, fov_map, con, game), Noise(x, y, 0, con, game), fov_map, con, game)
 
         # player stats
         self.sanity = 100.0  # sanity in %
@@ -164,8 +164,11 @@ class Player(Entity):
                     self.stamina -= 10
                 else:
                     self.drop()
-            if self.is_sneaking:
+            if self.stamina > 10 and self.is_sneaking:
                 self.stamina -= 5
+                self.noise.volume += 12
+            else:
+                self.noise.volume += 20
             self.x += dx
             self.y += dy
             self.stamina -= 5
@@ -218,6 +221,14 @@ class Player(Entity):
         if self.stamina > 100:
             self.stamina = 100
 
+        # noise
+        if self.game.turn_based:
+            self.noise.volume = 0
+        else:
+            self.noise.volume -= 5
+        if self.noise.volume < 0:
+            self.noise.volume = 0
+
 
 class Monster(Entity):
     SPAWN_DISTANCE = 12
@@ -238,12 +249,13 @@ class Monster(Entity):
 
         # player
         self.player = player
-        self.can_see_player = False
+        self.chasing_player = False
 
         # level
         self.level = level
         self.fov_map = level.fov_map
         self.path = libtcod.path_new_using_map(self.fov_map, 0.0)
+        self.noise_path = libtcod.path_new_using_map(self.fov_map, 0.0)
 
     def spawn(self, player, tiles):
         valid_spawns = []
@@ -267,31 +279,32 @@ class Monster(Entity):
             libtcod.path_compute(self.path, self.x, self.y, player.x, player.y)
 
     def despawn(self):
-        self.game.turn_based = True
         self.is_spawned = False
         self.x = None
         self.y = None
+        self.game.turn_based = True
+
+    def check_hear_player(self):
+        libtcod.path_compute(self.noise_path, self.x, self.y, self.player.x, self.player.y)
+        can_hear_player = False
+        if self.player.noise.volume > libtcod.path_size(self.noise_path):
+            libtcod.path_compute(self.path, self.x, self.y, self.player.x, self.player.y)
+            can_hear_player = True
+        return can_hear_player
 
     def check_see_player(self, tiles):
         self.compute_monster_fov()
 
         if self.game.turn_based or libtcod.map_is_in_fov(self.fov_map, self.player.x, self.player.y) \
                 and tiles[self.player.x][self.player.y].brightness > 3:
-            self.can_see_player = True
-        else:
-            self.can_see_player = False
-
-        if self.can_see_player:
-            self.move_speed = 5
+            can_see_player = True
+            self.move_speed = 5  # lower is faster
             libtcod.path_compute(self.path, self.x, self.y, self.player.x, self.player.y)
         else:
+            can_see_player = False
             self.move_speed = 8
 
-        if libtcod.path_is_empty(self.path):
-            self.move_speed = 8
-            self.can_see_player = False
-
-        return self.can_see_player
+        return can_see_player
 
     def compute_monster_fov(self):
         # compute fov of an entity
@@ -336,8 +349,13 @@ class Monster(Entity):
         self.move_index += 1
         self.monster_index += 1
 
-        if self.is_spawned and not self.check_see_player(tiles) and \
-                self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
+        if self.is_spawned and (self.check_see_player(tiles) or self.check_hear_player()):
+            self.chasing_player = True
+        elif self.is_spawned and libtcod.path_is_empty(self.path):
+            self.chasing_player = False
+
+        if self.is_spawned and not self.chasing_player \
+                and self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
             self.despawn()
             self.monster_index = 0
             self.monster_timer = libtcod.random_get_int(0, 50, 100)

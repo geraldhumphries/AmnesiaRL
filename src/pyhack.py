@@ -27,7 +27,7 @@ class Pyhack:
     def __init__(self):
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
         self.player = entity.Player(0, 0, self.level.fov_map, con, self)
-        self.monster = entity.Monster(0, 0, self.level, self.player, self.level.fov_map, con, self)
+        self.monster = entity.Monster(0, 0, self.level, self.player, self.level.monster_fov, con, self)
         self.entities = [self.player, self.monster]
         self.turn_based = True
         self.level.create_map(self.player, self)
@@ -70,6 +70,9 @@ class Pyhack:
             elif key.c == ord('c'):
                 self.player.performing_action = True
                 self.player.next_action = entity.NextAction.collect
+
+            elif key.c == ord('s'):
+                self.player.toggle_sneak()
         else:
             if key.vk == libtcod.KEY_LEFT:
                 self.player.perform_action(-1, 0)
@@ -108,6 +111,8 @@ class Pyhack:
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "San: " + str(int(self.player.sanity)))
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Hea: " + str(int(self.player.health)))
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Sta: " + str(int(self.player.stamina)))
+            if self.player.is_sneaking:
+                libtcod.console_print(con, 35, SCREEN_HEIGHT + 4, "SNEAKING")
 
             libtcod.console_blit(con, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT + 10, 0, 0, 0)
             libtcod.console_flush()
