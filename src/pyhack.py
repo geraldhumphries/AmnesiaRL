@@ -107,12 +107,12 @@ class Pyhack:
 
             libtcod.console_set_default_foreground(con, libtcod.white)
             libtcod.console_set_color_control(con, libtcod.white, libtcod.black)
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Fue: " + str(int(self.player.fuel)))
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "San: " + str(int(self.player.sanity)))
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Hea: " + str(int(self.player.health)))
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Sta: " + str(int(self.player.stamina)))
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 8, "Vis: " + str(int(self.level.tiles[self.player.x][self.player.y].brightness)))
-            libtcod.console_print(con, 5, SCREEN_HEIGHT + 9, "Noi: " + str(int(self.player.noise.volume)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 2, "Fue: " + str(int(self.player.fuel)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 3, "San: " + str(int(self.player.sanity)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 4, "Hea: " + str(int(self.player.health)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "Sta: " + str(int(self.player.stamina)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Vis: " + str(int(self.level.tiles[self.player.x][self.player.y].brightness)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Noi: " + str(int(self.player.noise.volume)))
             if self.player.is_sneaking:
                 libtcod.console_print(con, 35, SCREEN_HEIGHT + 4, "SNEAKING")
 
