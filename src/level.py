@@ -20,8 +20,8 @@ class Level:
         self.con = con
 
         # tile colors
-        self.color_lit_floor = libtcod.Color(100, 100, 100)
-        self.color_lit_wall = libtcod.Color(255, 255, 255)
+        self.color_lit_floor = libtcod.light_sepia
+        self.color_lit_wall = libtcod.lightest_sepia
         self.color_unlit_floor = libtcod.Color(25, 25, 25)
         self.color_unlit_wall = libtcod.Color(25, 25, 25)
 
@@ -256,13 +256,13 @@ class Level:
                     if libtcod.map_is_in_fov(self.fov_map, x, y) and self.tiles[x][y].brightness > 0:
                         if not self.tiles[x][y].is_walkable:
                             color = Light.calculate_tile_color(self.tiles[x][y].brightness,
-                                                               libtcod.darkest_grey, self.color_lit_wall)
+                                                               libtcod.darkest_sepia, self.color_lit_wall)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '#',
                                                         color, libtcod.BKGND_SET)
                         else:
                             # floor
                             color = Light.calculate_tile_color(self.tiles[x][y].brightness,
-                                                               libtcod.darkest_grey, self.color_lit_floor)
+                                                               libtcod.darkest_sepia, self.color_lit_floor)
                             libtcod.console_put_char_ex(self.con, x_draw, y_draw, '.',
                                                         color, libtcod.BKGND_SET)
                     else:

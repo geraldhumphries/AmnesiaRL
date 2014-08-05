@@ -46,7 +46,7 @@ class Entity:
     def draw(self, fov_map, top_left, bottom_right, tiles):
         if libtcod.map_is_in_fov(fov_map, self.x, self.y) and tiles[self.x][self.y].brightness > 0:
             color = Light.calculate_tile_color(tiles[self.x][self.y].brightness,
-                                               libtcod.darkest_grey, self.color)
+                                               libtcod.darkest_sepia, self.color)
             screen_x, screen_y = self.screen_xy(self, top_left, bottom_right, self.x, self.y)
             libtcod.console_set_default_foreground(self.con, color)
             libtcod.console_put_char(self.con, screen_x, screen_y, self.char, libtcod.BKGND_NONE)
