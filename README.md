@@ -1,6 +1,6 @@
-pyhack
+AmnesiaRL
 ======
-Pyhack is a roguelike version of Amnesia: The Dark Descent
+AmnesiaRL is a roguelike version of Amnesia: The Dark Descent
 
 Arrow keys to move   
 `a` to perform an action on an entity   

@@ -17,13 +17,13 @@ LIMIT_FPS = 25
 # libtcod specific settings
 libtcod.console_set_custom_font(b'res/terminal12x12_gs_ro.png',
                                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT, b'pyhack', False)
+libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT, b'AmnesiaRL', False)
 con = libtcod.console_new(SCREEN_WIDTH, SCREEN_HEIGHT + INTERFACE_HEIGHT)
 libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_disable_keyboard_repeat()
 
 
-class Pyhack:
+class AmnesiaRL:
     def __init__(self):
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
         self.player = entity.Player(0, 0, self.level.fov_map, con, self)
@@ -132,9 +132,12 @@ class Pyhack:
     def descend_floor(self):
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
-        self.monster = entity.Monster(25, 24, self.level, self.player, self.level.fov_map, con, self)
+        self.monster = entity.Monster(25, 24, self.level, self.player, self.level.monster_fov, con, self)
+        self.player.entity_fov_map = self.level.fov_map
         self.entities = [self.player, self.monster]
+        self.turn_based = True
         self.level.create_map(self.player, self)
+        self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
     def game_over(self):
         game_over_string = "GAME OVER"
@@ -165,8 +168,8 @@ class Pyhack:
 
 
 def main():
-    # initializes the Pyhack object
-    game = Pyhack()
+    # initializes the game object
+    game = AmnesiaRL()
     game.level.draw(game.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 
     # constantly renders while the program window is still open

@@ -131,20 +131,24 @@ class Level:
     def add_doors(self, room, game):
         for x in range(room.x1, room.x2):
             # top edge
-            if self.tiles[x][room.y1].is_walkable and self.num_adjacent_floors(x, room.y1) <= 2:
+            if self.tiles[x][room.y1].is_walkable and self.num_adjacent_floors(x, room.y1) <= 2 \
+                    and not self.tiles[x + 1][room.y1].is_walkable and not self.tiles[x - 1][room.y1].is_walkable:
                 game.entities.append(Door(x, room.y1, self, self.fov_map, self.con, game))
 
             # bottom edge
-            if self.tiles[x][room.y2].is_walkable and self.num_adjacent_floors(x, room.y2) <= 2:
+            if self.tiles[x][room.y2].is_walkable and self.num_adjacent_floors(x, room.y2) <= 2 \
+                    and not self.tiles[x + 1][room.y2].is_walkable and not self.tiles[x - 1][room.y2].is_walkable:
                 game.entities.append(Door(x, room.y2, self, self.fov_map, self.con, game))
 
         for y in range(room.y1, room.y2):
             # left edge
-            if self.tiles[room.x1][y].is_walkable and self.num_adjacent_floors(room.x1, y) <= 2:
+            if self.tiles[room.x1][y].is_walkable and self.num_adjacent_floors(room.x1, y) <= 2 \
+                    and not self.tiles[room.x1][y + 1].is_walkable and not self.tiles[room.x1][y - 1].is_walkable:
                 game.entities.append(Door(room.x1, y, self, self.fov_map, self.con, game))
 
             # right edge
-            if self.tiles[room.x2][y].is_walkable and self.num_adjacent_floors(room.x2, y) <= 2:
+            if self.tiles[room.x2][y].is_walkable and self.num_adjacent_floors(room.x2, y) <= 2 \
+                    and not self.tiles[room.x2][y + 1].is_walkable and not self.tiles[room.x2][y - 1].is_walkable:
                 game.entities.append(Door(room.x2, y, self, self.fov_map, self.con, game))
 
     def add_room_entities(self, room, game):
