@@ -111,6 +111,8 @@ class Pyhack:
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 5, "San: " + str(int(self.player.sanity)))
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 6, "Hea: " + str(int(self.player.health)))
             libtcod.console_print(con, 5, SCREEN_HEIGHT + 7, "Sta: " + str(int(self.player.stamina)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 8, "Vis: " + str(int(self.level.tiles[self.player.x][self.player.y].brightness)))
+            libtcod.console_print(con, 5, SCREEN_HEIGHT + 9, "Noi: " + str(int(self.player.noise.volume)))
             if self.player.is_sneaking:
                 libtcod.console_print(con, 35, SCREEN_HEIGHT + 4, "SNEAKING")
 

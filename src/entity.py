@@ -166,9 +166,10 @@ class Player(Entity):
                     self.drop()
             if self.stamina > 10 and self.is_sneaking:
                 self.stamina -= 5
-                self.noise.volume += 12
+                self.noise.volume += 8
             else:
-                self.noise.volume += 20
+                self.is_sneaking = False
+                self.noise.volume += 18
             self.x += dx
             self.y += dy
             self.stamina -= 5
@@ -225,7 +226,7 @@ class Player(Entity):
         if self.game.turn_based:
             self.noise.volume = 0
         else:
-            self.noise.volume -= 5
+            self.noise.volume -= 4
         if self.noise.volume < 0:
             self.noise.volume = 0
 
