@@ -361,7 +361,7 @@ class Monster(Entity):
                 and self.tile_distance(self.player.x, self.player.y) > 15 and self.monster_index > 250:
             self.despawn()
             self.monster_index = 0
-            self.monster_timer = libtcod.random_get_int(0, 50, 100)
+            self.monster_timer = libtcod.random_get_int(0, 100, 150)
 
         elif self.monster_index > self.monster_timer and not self.is_spawned:
             self.monster_index = 0
