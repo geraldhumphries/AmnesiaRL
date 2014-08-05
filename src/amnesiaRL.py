@@ -133,6 +133,7 @@ class AmnesiaRL:
         self.floor += 1
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
         self.monster = entity.Monster(25, 24, self.level, self.player, self.level.monster_fov, con, self)
+        self.player.entity_fov_map = self.level.fov_map
         self.entities = [self.player, self.monster]
         self.turn_based = True
         self.level.create_map(self.player, self)
