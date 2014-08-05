@@ -378,7 +378,7 @@ class Monster(Entity):
 
 
 class Door(Entity):
-    BASE_STRENGTH = 5
+    BASE_STRENGTH = 3
     closed_char = "+"
     open_char = "-"
     class_color = libtcod.light_gray
