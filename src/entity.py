@@ -422,7 +422,7 @@ class Fuel(Entity):
 
     def __init__(self, x, y, fov_map, con, game):
         Entity.__init__(self, x, y, self.class_char, self.class_color, False, Light(0, fov_map, con, game), Noise(x, y, 0, con, None), fov_map, con, game)
-        self.amount = libtcod.random_get_int(0, 10, 30)
+        self.amount = libtcod.random_get_int(0, 5, 15)
 
     def collect(self, player):
         self.x = None
