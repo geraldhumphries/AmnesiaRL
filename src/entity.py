@@ -229,6 +229,8 @@ class Player(Entity):
             self.noise.volume -= 4
         if self.noise.volume < 0:
             self.noise.volume = 0
+        if self.noise.volume > 100:
+            self.noise.volume = 100
 
 
 class Monster(Entity):
