@@ -121,7 +121,7 @@ class Player(Entity):
             self.light.brightness = 1
 
     def toggle_sneak(self, is_sneaking=None):
-        if is_sneaking is None:
+        if is_sneaking is None and self.stamina >= 15:
             self.is_sneaking = not self.is_sneaking
         else:
             self.is_sneaking = is_sneaking
@@ -227,9 +227,12 @@ class Player(Entity):
             self.noise.volume = 0
         else:
             self.noise.volume -= 4
-        if self.noise.volume < 0:
+
+        if not self.is_sneaking and self.stamina < 15 and self.noise.volume < 25:
+            self.noise.volume = 25
+        elif self.noise.volume < 0:
             self.noise.volume = 0
-        if self.noise.volume > 100:
+        elif self.noise.volume > 100:
             self.noise.volume = 100
 
 
