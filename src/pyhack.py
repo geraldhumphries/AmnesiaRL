@@ -131,10 +131,10 @@ class Pyhack:
 
     def descend_floor(self):
         self.floor += 1
-        self.turn_based = True
         self.level = Level(MAP_WIDTH, MAP_HEIGHT, con, self)
-        self.monster = entity.Monster(25, 24, self.level, self.player, self.level.fov_map, con, self)
+        self.monster = entity.Monster(25, 24, self.level, self.player, self.level.monster_fov, con, self)
         self.entities = [self.player, self.monster]
+        self.turn_based = True
         self.level.create_map(self.player, self)
         self.level.draw(self.player, SCREEN_WIDTH, SCREEN_HEIGHT)
 

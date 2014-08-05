@@ -416,6 +416,7 @@ class Door(Entity):
         self.strength -= 1
         if self.strength <= 0:
             self.open()
+            self.level.create_fov_maps()
 
 
 class Fuel(Entity):
